@@ -6,3 +6,80 @@ html {
               Helvetica, Arial, Ubuntu, sans-serif,
               "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
+
+body {
+  margin: 0;
+  color: #001420;
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+}
+
+h1 {
+  font-size:  2.827em;
+}
+
+h2 {
+  font-size:  1.937em;
+}
+
+h3 {
+  font-size: 1.375em;
+}
+
+[page-header] {
+  padding: 50px 30px;
+  background-color: #FFF;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+[page-logo] {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #001420;
+  outline: none;
+  transform: none;
+  transform-origin: left center;
+}
+
+
+[page-logo] > img {
+  height: 21px;
+}
+
+
+[page-logo] > h3 {
+  color: inherit;
+  font-weight: lighter;
+  margin-top: 0;
+  margin-bottom: 0;
+  letter-spacing: 0.5px;
+  -webkit-text-stroke: 0;
+  white-space: nowrap;
+  margin-left: 16px;
+  padding-left: 16px;
+  font-size: 25px;
+  border-left: 1px solid #5a5a5a;
+  font-weight: 700;
+}
+
+
+main {
+  display: grid;
+  padding: 32px;
+  grid-template-rows: repeat(1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-gap: 24px;
+}
+
+main > section {
+  background-color: #FFF;
+  border-radius: 8px;
+  box-shadow: 0 19px 38px 0 rgba(0, 0, 0, 0.16),
+              0 15px 12px 0 rgba(0, 0, 0, 0.12);
+}
