@@ -1,0 +1,6161 @@
+swagger: '2.0'
+info:
+  version: 1.47.0
+  title: Contacthub
+  description: >-
+    The platform to collect, store, conserve, update and export all the digital
+    identity data of your customers.
+  contact:
+    name: API Support
+    url: 'http://www.contactlab.com'
+    email: contacthub@contactlab.com
+  license:
+    name: Contactlab SPA
+    url: 'http://www.contactlab.com/en/'
+consumes:
+  - application/json
+produces:
+  - application/json
+host: api.contactlab.it
+schemes:
+  - https
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+basePath: /hub/v1
+tags:
+  - name: analytics
+    description: Analytics endpoint
+  - name: automations
+    description: Configuration automations endpoint
+  - name: configuration
+    description: Configuration endpoint
+  - name: customers
+    description: Customers endpoint
+  - name: events
+    description: Events endpoint
+  - name: model
+    description: Model endpoint
+  - name: segment
+    description: Segment endpoint
+  - name: updates
+    description: Updates endpoint
+  - name: user
+    description: User endpoint
+
+paths:
+  # analytics
+  '/workspaces/{workspaceId}/analytics/customer/count':
+    get:
+      description: Gets count of new, updated and deleted customers
+      summary: "Get customer count by state"
+      operationId: countCustomers
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: nodes
+          in: query
+          description: The list of nodeId separated by comma
+          type: string
+        - name: startDate
+          in: query
+          description: Start date
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: End date
+          type: string
+          format: date
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CustomerCount'
+        '403':
+          description: Forbidden
+      tags:
+        - analytic
+  '/workspaces/{workspaceId}/analytics/trend/customer':
+    get:
+      description: Trend of customer base
+      summary: "Get Customer base trend"
+      operationId: getCustomerTrendAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "analytics trend",
+        #   "parameters": {
+        #     "nodes": null,
+        #     "mode": "MONTHLY",
+        #     "startDate": "2015-12-31",
+        #     "endDate": "2016-08-31"
+        #   },
+        #   "headers": {
+        #     "nodeId": {
+        #       "description": "the node Id",
+        #       "type": "string"
+        #     },
+        #     "values": {
+        #       "description": "the value list",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "time": {
+        #             "description": "Date referral to mode defined in request",
+        #             "type": "string"
+        #           },
+        #           "new": {
+        #             "description": "Number of new customers",
+        #             "type": "number"
+        #           },
+        #           "lost": {
+        #             "description": "Number of lost customers",
+        #             "type": "number"
+        #           },
+        #           "total": {
+        #             "description": "Number of total customer in the node",
+        #             "type": "number"
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "values": [
+        #         {
+        #           "new": 1,
+        #           "total": 2,
+        #           "time": "2016-01",
+        #           "lost": 0
+        #         },
+        #         {
+        #           "new": 12,
+        #           "total": 13,
+        #           "time": "2016-02",
+        #           "lost": 1
+        #         },...
+        #       ],
+        #       "nodeId": "node_1"
+        #     }
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: mode
+          in: query
+          description: Mode of aggretation daily, weekly,monthly
+          required: true
+          type: string
+          enum:
+            - DAILY
+            - WEEKLY
+            - MONTHLY
+          default: DAILY
+        - name: startDate
+          in: query
+          description: The start date for get the trend
+          required: true
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: The end date for get the trend
+          required: true
+          type: string
+          format: date
+        - name: nodes
+          in: query
+          description: The list of nodeId separated by comma
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Trend'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/trend/event':
+    get:
+      description: Trend of events
+      summary: "Get Events trend"
+      operationId: getEventTrendAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "Events trend analytics",
+        #   "parameters": {
+        #     "nodes": null,
+        #     "mode": "MONTHLY",
+        #     "startDate": "2015-12-31",
+        #     "endDate": "2016-08-31",
+        #     "eventType": "completedOrder",
+        #     "context": "ECOMMERCE"
+        #   },
+        #   "headers": {
+        #     "nodeId": {
+        #       "description": "Node identifier",
+        #       "type": "string"
+        #     },
+        #     "values": {
+        #       "description": "Distribution list",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "time": {
+        #             "description": "Date referral to mode defined in request",
+        #             "type": "string"
+        #           },
+        #           "new": {
+        #             "description": "Number of new events",
+        #             "type": "number"
+        #           },
+        #           "total": {
+        #             "description": "Number of total events in the node",
+        #             "type": "number"
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "values": [
+        #         {
+        #           "new": 1,
+        #           "total": 2,
+        #           "time": "2016-01"
+        #         },
+        #         {
+        #           "new": 12,
+        #           "total": 13,
+        #           "time": "2016-02"
+        #         }, ...
+        #       ],
+        #       "nodeId": "node_1"
+        #     }
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: mode
+          in: query
+          description: Mode of aggretation daily, weekly and monthly
+          required: true
+          type: string
+          enum:
+            - DAILY
+            - WEEKLY
+            - MONTHLY
+          default: DAILY
+        - name: startDate
+          in: query
+          description: The start date for get the trend
+          required: true
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: The end date for get the trend
+          required: true
+          type: string
+          format: date
+        - name: nodes
+          in: query
+          description: The list of nodeId separated by comma
+          type: string
+        - $ref: '#/parameters/eventContext'
+        - name: eventType
+          in: query
+          description: the event type
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/EventTrend'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/composition/gender':
+    get:
+      description: Gets composition by gender for one o multiple node
+      summary: "Get Gender composition"
+      operationId: getGenderCompositionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "analytics gender",
+        #   "parameters": {
+        #     "nodes": null,
+        #     "startDate": "2015-12-31",
+        #     "endDate": "2016-08-31"
+        #   },
+        #   "headers": {
+        #     "nodeId": {
+        #       "description": "the node Id",
+        #       "type": "string"
+        #     },
+        #     "distribution": {
+        #       "description": "the distribution list",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "name": {
+        #             "description": "Gender name",
+        #             "type": "string"
+        #           },
+        #           "value": {
+        #             "description": "Value for gender",
+        #             "type": "string"
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "distribution": [{"name": "male", "value": 7},{"name": "N/A", "value": 1},{"name": "female", "value": 1}],
+        #       "nodeId": "node_1"
+        #     }, ...
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: nodes
+          in: query
+          description: The list of nodeId separated by comma
+          type: string
+        - name: startDate
+          in: query
+          description: Start date of the composition
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: End date of the composition
+          type: string
+          format: date
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CompositionGender'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/composition/age-range':
+    get:
+      description: Gets composition by age range for one o multiple node
+      summary: "Get Age-range composition"
+      operationId: getAgeRangeCompositionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "analytics age-range",
+        #   "parameters": {
+        #     "nodes": null,
+        #     "startDate": "2015-12-31",
+        #     "endDate": "2016-08-31"
+        #   },
+        #   "headers": {
+        #     "nodeId": {
+        #       "description": "the node Id",
+        #       "type": "string"
+        #     },
+        #     "distribution": {
+        #       "description": "the distribution list",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "name": {
+        #             "description": "Age range name",
+        #             "type": "string"
+        #           },
+        #           "value": {
+        #             "description": "Value for Age range",
+        #             "type": "string"
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "distribution": [
+        #       {"name": "> 64","value": 0},{"name": "55-64","value": 0},{"name": "45-54","value": 1},{"name": "35-44","value": 2},
+        #       {"name": "25-34","value": 2},{"name": "18-24", "value": 1},{"name": "< 18","value": 2},{"name": "N/A","value": 1}
+        #       ],
+        #       "nodeId": "node_1"
+        #     },...
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: nodes
+          in: query
+          description: The list of nodeId separated by comma
+          type: string
+        - name: startDate
+          in: query
+          description: Start date of the composition
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: End date of the composition
+          type: string
+          format: date
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CompositionAgeRange'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/composition/geo/country':
+    get:
+      description: Gets composition by country for one o multiple node
+      summary: "Get Country composition"
+      operationId: getCountryCompositionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "analytics geo-country",
+        #   "parameters": {
+        #     "nodes": null,
+        #     "startDate": "2015-12-31",
+        #     "endDate": "2016-08-31"
+        #   },
+        #   "headers": {
+        #     "nodeId": {
+        #       "description": "the node Id",
+        #       "type": "string"
+        #     },
+        #     "distribution": {
+        #       "description": "the distribution list",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "name": {
+        #             "description": "Country name",
+        #             "type": "string"
+        #           },
+        #           "value": {
+        #             "description": "Value for country",
+        #             "type": "string"
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "nodeId": "1",
+        #       "distribution":[{"name": "italy", "value": 12000}, {"name": "spain", "value": 10000}, ....]
+        #     },
+        #     {
+        #       "nodeId": "2",
+        #       "distribution":[{"name": "italy", "value": 12000}, {"name": "spain", "value": 10000}, ....]
+        #     }
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: nodes
+          in: query
+          description: The list of nodeId separated by comma
+          type: string
+        - name: startDate
+          in: query
+          description: Start date of the composition
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: End date of the composition
+          type: string
+          format: date
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CompositionGeoCountry'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/composition/geo/city':
+    get:
+      description: GetS composition by city for one o multiple node
+      summary: "Get City composition"
+      operationId: getCityCompositionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "analytics geo-city",
+        #   "parameters": {
+        #     "nodes": null,
+        #     "country": 'italy',
+        #     "startDate": "2015-12-31",
+        #     "endDate": "2016-08-31"
+        #   },
+        #   "headers": {
+        #     "nodeId": {
+        #       "description": "the node Id",
+        #       "type": "string"
+        #     },
+        #     "distribution": {
+        #       "description": "the distribution list",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "name": {
+        #             "description": "City name",
+        #             "type": "string"
+        #           },
+        #           "value": {
+        #             "description": "Value for city",
+        #             "type": "string"
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "distribution":[{"name": "rome", "value": 12000}, {"name": "milan", "value": 10000}, ....],
+        #       "nodeId": "node_1"
+        #     },...
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: country
+          in: query
+          description: The name of country to filter
+          type: string
+        - name: nodes
+          in: query
+          description: The list of nodeId separated by comma
+          type: string
+        - name: startDate
+          in: query
+          description: Start date of the composition
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: End date of the composition
+          type: string
+          format: date
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CompositionGeoCity'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/distribution/customer/node':
+    get:
+      description: Distribution of new customers, aggregated for nodes.
+      summary: "Get Customers node distribution"
+      operationId: getNodeCustomerDistributionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "Distribution of new customers, aggregated for nodes",
+        #   "parameters": {
+        #     "nodes": "bebbe268-0900-4184-9849-bc609fc90a32",
+        #     "startDate": "2016-08-25",
+        #     "endDate": "2016-09-02"
+        #   },
+        #   "headers": {
+        #     "data": {
+        #       "description": "Distribution for node of 'customerCreated' events",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "nodeId": {
+        #             "description": "Node identifier",
+        #             "type": "string"
+        #           },
+        #           "count": {
+        #             "description": "Count of events",
+        #             "type": "integer"
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "count": 0,
+        #       "nodeId": "bebbe268-0900-4184-9849-bc609fc90a32"
+        #     }
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: startDate
+          in: query
+          description: Start date of the distribution
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: End date of the distribution
+          type: string
+          format: date
+        - name: nodes
+          in: query
+          description: List of node identifiers separated by comma
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AnalyticDistributionCustomerNode'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/distribution/customer/source':
+    get:
+      description: Distribution of new customers, aggregated for nodes and sources.
+      summary: "Get Customers source distribution"
+      operationId: getSourceCustomerDistributionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "Distribution of new customers, aggregated for nodes and sources",
+        #   "parameters": {
+        #     "nodes": "bebbe268-0900-4184-9849-bc609fc90a32",
+        #     "startDate": "2016-08-25",
+        #     "endDate": "2016-09-02"
+        #   },
+        #   "headers": {
+        #     "data": {
+        #       "description": "Distribution for node and sources of 'customerCreated' events",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "nodeId": {
+        #             "description": "Node identifier",
+        #             "type": "string"
+        #           },
+        #           "values": {
+        #             "description": "Distribution for sources of events",
+        #             "type": "array",
+        #             "items": {
+        #               "type": "object",
+        #               "properties": {
+        #                 "sourceId": {
+        #                   "description": "Source identifier",
+        #                   "type": "string"
+        #                 },
+        #                 "count": {
+        #                   "description": "Count of events",
+        #                   "type": "integer"
+        #                 }
+        #               }
+        #             }
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "values": [
+        #         {
+        #           "sourceId": "4f3096ca-65ec-4f2e-8332-a4dc0edacd8f",
+        #           "count": 86
+        #         }
+        #       ],
+        #       "nodeId": "bebbe268-0900-4184-9849-bc609fc90a32"
+        #     }
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: startDate
+          in: query
+          description: Start date of the distribution
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: End date of the distribution
+          type: string
+          format: date
+        - name: nodes
+          in: query
+          description: List of node identifiers separated by comma
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AnalyticDistributionCustomerSource'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/distribution/customer/time':
+    get:
+      description: Distribution of new customers, aggregated for nodes and time.
+      summary: "Get Customers time distribution"
+      operationId: getTimeCustomerDistributionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "Distribution of new customers, aggregated for nodes and time",
+        #   "parameters": {
+        #     "mode": "DAYOFWEEK",
+        #     "nodes": "bebbe268-0900-4184-9849-bc609fc90a32",
+        #     "startDate": null,
+        #     "endDate": null
+        #   },
+        #   "headers": {
+        #     "data": {
+        #       "description": "Distribution for node and time of 'customerCreated' events",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "nodeId": {
+        #             "description": "Node identifier",
+        #             "type": "string"
+        #           },
+        #           "values": {
+        #             "description": "Distribution for time of events",
+        #             "type": "array",
+        #             "items": {
+        #               "type": "object",
+        #               "properties": {
+        #                 "time": {
+        #                   "description": "Time label",
+        #                   "type": "string"
+        #                 },
+        #                 "count": {
+        #                   "description": "Count of events",
+        #                   "type": "integer"
+        #                 }
+        #               }
+        #             }
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "values": [
+        #         {
+        #           "count": 2,
+        #           "time": "Tue"
+        #         },
+        #         {
+        #           "count": 7,
+        #           "time": "Wed"
+        #         },
+        #         {
+        #           "count": 5,
+        #           "time": "Thu"
+        #         },
+        #         {
+        #           "count": 5,
+        #           "time": "Fri"
+        #         },
+        #         {
+        #           "count": 2,
+        #           "time": "Sat"
+        #         },
+        #         {
+        #           "count": 3,
+        #           "time": "Sun"
+        #         },
+        #         {
+        #           "count": 4,
+        #           "time": "Mon"
+        #         }
+        #       ],
+        #       "nodeId": "bebbe268-0900-4184-9849-bc609fc90a32"
+        #     }
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: mode
+          in: query
+          description: Distribution mode
+          type: string
+          enum:
+            - HOUROFDAY
+            - DAYOFWEEK
+            - DAYOFMONTH
+          default: HOUROFDAY
+        - name: startDate
+          in: query
+          description: Start date of the distribution
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: End date of the distribution
+          type: string
+          format: date
+        - name: nodes
+          in: query
+          description: List of node identifiers separated by comma
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AnalyticDistributionCustomerTime'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/distribution/event/node':
+    get:
+      description: Distribution of events, aggregated for nodes.
+      summary: "Get Events node distribution"
+      operationId: getNodeEventDistributionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "Distribution of new events, aggregated for nodes",
+        #   "parameters": {
+        #     "context": null,
+        #     "eventType": null,
+        #     "nodes": "bebbe268-0900-4184-9849-bc609fc90a32",
+        #     "startDate": "2016-08-25",
+        #     "endDate": "2016-09-02"
+        #   },
+        #   "headers": {
+        #     "data": {
+        #       "description": "Distribution for node of events",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "nodeId": {
+        #             "description": "Node identifier",
+        #             "type": "string"
+        #           },
+        #           "count": {
+        #             "description": "Count of events",
+        #             "type": "integer"
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "count": 12,
+        #       "nodeId": "bebbe268-0900-4184-9849-bc609fc90a32"
+        #     }
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - $ref: '#/parameters/eventContext'
+        - name: eventType
+          in: query
+          description: Event type
+          type: string
+        - name: startDate
+          in: query
+          description: Start date of the distribution
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: End date of the distribution
+          type: string
+          format: date
+        - name: nodes
+          in: query
+          description: List of node identifiers separated by comma
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AnalyticDistributionEventNode'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/distribution/event/source':
+    get:
+      description: Distribution of events, aggregated for nodes and sources.
+      summary: "Get Events source distribution"
+      operationId: getSourceEventDistributionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "Distribution of events, aggregated for nodes and sources",
+        #   "parameters": {
+        #     "context": null,
+        #     "eventType": null,
+        #     "nodes": "bebbe268-0900-4184-9849-bc609fc90a32",
+        #     "startDate": "2016-08-25",
+        #     "endDate": "2016-09-02"
+        #   },
+        #   "headers": {
+        #     "data": {
+        #       "description": "Distribution for node and sources of events",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "nodeId": {
+        #             "description": "Node identifier",
+        #             "type": "string"
+        #           },
+        #           "values": {
+        #             "description": "Distribution for sources of events",
+        #             "type": "array",
+        #             "items": {
+        #               "type": "object",
+        #               "properties": {
+        #                 "sourceId": {
+        #                   "description": "Source identifier",
+        #                   "type": "string"
+        #                 },
+        #                 "count": {
+        #                   "description": "Count of events",
+        #                   "type": "integer"
+        #                 }
+        #               }
+        #             }
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "values": [
+        #         {
+        #           "sourceId": "4f3096ca-65ec-4f2e-8332-a4dc0edacd8f",
+        #           "count": 86
+        #         }
+        #       ],
+        #       "nodeId": "bebbe268-0900-4184-9849-bc609fc90a32"
+        #     }
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - $ref: '#/parameters/eventContext'
+        - name: eventType
+          in: query
+          description: Event type
+          type: string
+        - name: startDate
+          in: query
+          description: Start date of the distribution
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: End date of the distribution
+          type: string
+          format: date
+        - name: nodes
+          in: query
+          description: List of node identifiers separated by comma
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AnalyticDistributionEventSource'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/distribution/event/time':
+    get:
+      description: Distribution of events, aggregated for nodes and time.
+      summary: "Get Events time distribution"
+      operationId: getTimeEventDistributionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "Distribution of events, aggregated for nodes and time",
+        #   "parameters": {
+        #     "context": null,
+        #     "mode": "DAYOFWEEK",
+        #     "nodes": "bebbe268-0900-4184-9849-bc609fc90a32",
+        #     "startDate": null,
+        #     "endDate": null
+        #   },
+        #   "headers": {
+        #     "data": {
+        #       "description": "Distribution for node and time of events",
+        #       "type": "array",
+        #       "items": {
+        #         "type": "object",
+        #         "properties": {
+        #           "nodeId": {
+        #             "description": "Node identifier",
+        #             "type": "string"
+        #           },
+        #           "values": {
+        #             "description": "Distribution for time of events",
+        #             "type": "array",
+        #             "items": {
+        #               "type": "object",
+        #               "properties": {
+        #                 "time": {
+        #                   "description": "Time label",
+        #                   "type": "string"
+        #                 },
+        #                 "count": {
+        #                   "description": "Count of events",
+        #                   "type": "integer"
+        #                 }
+        #               }
+        #             }
+        #           }
+        #         }
+        #       }
+        #     }
+        #   },
+        #   "data": [
+        #     {
+        #       "values": [
+        #         {
+        #           "count": 2,
+        #           "time": "Tue"
+        #         },
+        #         {
+        #           "count": 7,
+        #           "time": "Wed"
+        #         },
+        #         {
+        #           "count": 5,
+        #           "time": "Thu"
+        #         },
+        #         {
+        #           "count": 5,
+        #           "time": "Fri"
+        #         },
+        #         {
+        #           "count": 2,
+        #           "time": "Sat"
+        #         },
+        #         {
+        #           "count": 3,
+        #           "time": "Sun"
+        #         },
+        #         {
+        #           "count": 4,
+        #           "time": "Mon"
+        #         }
+        #       ],
+        #       "nodeId": "bebbe268-0900-4184-9849-bc609fc90a32"
+        #     }
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - $ref: '#/parameters/eventContext'
+        - name: eventType
+          in: query
+          description: Event type
+          type: string
+        - name: mode
+          in: query
+          description: Distribution mode
+          type: string
+          enum:
+            - HOUROFDAY
+            - DAYOFWEEK
+            - DAYOFMONTH
+          default: HOUROFDAY
+        - name: startDate
+          in: query
+          description: Start date of the distribution
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: End date of the distribution
+          type: string
+          format: date
+        - name: nodes
+          in: query
+          description: List of node identifiers separated by comma
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AnalyticDistributionEventTime'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/query/distribution/customer/acquisition':
+    get:
+      description: Analytic customer acquisition distribution.
+      summary: "Get Customers acquisition distribution"
+      operationId: getAcquisitionCustomerDistributionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "nodeId": "027634e8-5aa1-4436-a543-568f476b3f04",
+        #   "startDate": "2015-01-01",
+        #   "endDate": "2016-03-31",
+        #   "eventType": "completedOrder",
+        #   "aggregation": {
+        #     "operator": "SUM",
+        #     "fieldPath": "properties.amount.total"
+        #   }
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: query
+          in: query
+          description: Distribution Query object
+          type: string
+          required: true
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AnalyticQueryCustomerAcquisitionDistribution'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/query/distribution/customer':
+    get:
+      description: Analytic customer distribution.
+      summary: "Get Customers distribution"
+      operationId: getCustomerDistributionAnalyticsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "nodeId": "027634e8-5aa1-4436-a543-568f476b3f04",
+        #   "startDate": "2015-01-01",
+        #   "endDate": "2016-03-31",
+        #   "eventType": "completedOrder",
+        #   "aggregation": {
+        #     "operator": "SUM",
+        #     "fieldPath": "properties.products.price"
+        #   },
+        #   "distributionFieldPath": "properties.products.sku",
+        #   "customerDistributionFieldPath": "base.gender"
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: query
+          in: query
+          description: Distribution Query object
+          type: string
+          required: true
+        - name: size
+          in: query
+          description: Distribution size
+          type: integer
+          required: false
+        - name: sort
+          in: query
+          description: Distribution sort direction
+          type: string
+          required: false
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AnalyticQueryCustomerDistribution'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/query/distribution/event':
+    get:
+      description: |
+        Analytic event distribution.
+        #### EXAMPLE
+        ```json
+        {
+          "nodeId": "027634e8-5aa1-4436-a543-568f476b3f04",
+          "startDate": "2015-01-01",
+          "endDate": "2016-03-31",
+          "eventType": "completedOrder",
+          "aggregation": {
+            "operator": "SUM",
+            "fieldPath": "properties.products.price"
+          },
+          "distributionFieldPath": "properties.products.sku",
+          "customerDistributionFieldPath": "base.gender"
+        }
+        ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: query
+          in: query
+          description: Distribution Query object
+          type: string
+          required: true
+        - name: size
+          in: query
+          description: Distribution size
+          type: integer
+          required: false
+        - name: sort
+          in: query
+          description: Distribution sort direction
+          type: string
+          required: false
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AnalyticQueryEventDistribution'
+        '403':
+          description: You don't have the necessary permissions for the resource
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/query/numeric':
+    get:
+      description: Analytic numeric query on events
+      summary: "Get Events numeric query"
+      operationId: getNumericQueryAnalyticsWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: query
+          in: query
+          description: Numeric Query object
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AnalyticQueryNumericResp'
+        '403':
+          description: Forbidden
+      tags:
+        - analytics
+  '/workspaces/{workspaceId}/analytics/query/trend':
+      get:
+        description: Analytic trend query on events
+        summary: "Get Events trend query"
+        operationId: getTrendQueryAnalyticsWorkspaces
+        parameters:
+          - $ref: "#/parameters/workspaceId"
+          - name: query
+            in: query
+            description: Trend Query object
+            type: string
+        security:
+           - Bearer: []
+        responses:
+          '200':
+            description: OK
+            schema:
+              $ref: '#/definitions/AnalyticQueryTrendResp'
+          '403':
+            description: Forbidden
+        tags:
+          - analytics
+  '/workspaces/{workspaceId}/analytics/query/distribution':
+      get:
+        description: Analytic distribution query on events
+        summary: "Get Events distribution query"
+        operationId: getDistributionQueryAnalyticsWorkspaces
+        parameters:
+          - $ref: "#/parameters/workspaceId"
+          - name: query
+            in: query
+            description: Distribution Query object
+            type: string
+        security:
+           - Bearer: []
+        responses:
+          '200':
+            description: OK
+            schema:
+              $ref: '#/definitions/AnalyticQueryDistributionResp'
+          '403':
+            description: Forbidden
+        tags:
+          - analytics
+
+  # automations
+  '/workspaces/{workspaceId}/configuration/automations/event-trigger':
+    get:
+      description: Gets all configured automations
+      summary: "Get Automations list"
+      operationId: getEventTriggerAutomationsConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedAutomationConfigurationValues'
+        '403':
+          description: Forbidden
+      tags:
+        - automations
+    post:
+      description: Creates a new automation configuration
+      summary: "Create Automation"
+      operationId: postEventTriggerAutomationConfigurationWorkspaces
+        #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "Webhook",
+        #   "enabled": true,
+        #   "nodes": [
+        #     "9d57e0e4-42cd-4b84-9eab-7dc28fb5a220"
+        #   ],
+        #   "topic": {
+        #     "eventType": "addedProduct",
+        #     "customerType": "ANONYMOUS",
+        #     "eventContext": "WEB",
+        #     "query": {
+        #       "are": {
+        #         "condition": {
+        #           "conditions": [
+        #             {
+        #               "value": [
+        #                 "82f0d0a1-84df-4af5-9fb8-57dca1950808"
+        #               ],
+        #               "operator": "IN",
+        #               "attribute": "nodeId",
+        #               "type": "atomic"
+        #             },
+        #             {
+        #               "value": [
+        #                 1472421600000,
+        #                 1475099999999
+        #               ],
+        #               "operator": "BETWEEN",
+        #               "attribute": "date",
+        #               "type": "atomic"
+        #             },
+        #             {
+        #               "value": "customerCreated",
+        #               "operator": "EQUALS",
+        #               "attribute": "type",
+        #               "type": "atomic"
+        #             }
+        #           ],
+        #           "conjunction": "and",
+        #           "type": "composite"
+        #         }
+        #       },
+        #       "name": "mySimpleQuery",
+        #       "type": "simple"
+        #     }
+        #   },
+        #   "tag": {
+        #     "operations": [
+        #       { "op": "SET_NULL", "path": "/foo"},
+        #       { "op": "SET_CONSTANT", "path": "/baz", "value": "boo" },
+        #       { "op": "ADD_CONSTANT", "path": "/hello", "value": ["world"] },
+        #       { "op": "SUB_EVENT_PROPERTY", "path": "/customerPrice", "value": "/_price"},
+        #       { "op": "SUB_CONSTANT", "path": "/customerPrice2", "value": 2}
+        #     ]
+        #   },
+        #   "webhook": {
+        #     "url": "http://...",
+        #     "format": "JSON",
+        #     "body": {
+        #       "type": "LIST",
+        #       "contents": [
+        #         {"type": "CONSTANT", "key": "d","value": "/eventfield"},
+        #         {"type": "EVENT_PROPERTY", "key": "d", "value": "/constantvalue"}
+        #       ]
+        #     }
+        #   }
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: configuration
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AutomationConfigurationPayload'
+      security:
+         - Bearer: []
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/AutomationConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - automations
+  '/workspaces/{workspaceId}/configuration/automations/event-trigger/{id-automation}':
+    get:
+      description: Gets a specific automation
+      summary: "Get Automation details"
+      operationId: getEventTriggerAutomationConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: id-automation
+          in: path
+          description: Unique identifier of automation
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AutomationConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - automations
+    put:
+      description: Updates a specific automation
+      summary: "Modify Automation"
+      operationId: putEventTriggerAutomationConfigurationWorkspaces
+        #
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "Webhook",
+        #   "enabled": true,
+        #   "nodes": [
+        #     "9d57e0e4-42cd-4b84-9eab-7dc28fb5a220"
+        #   ],
+        #   "topic": {
+        #     "eventType": "addedProduct",
+        #     "customerType": "ANONYMOUS",
+        #     "eventContext": "WEB",
+        #     "query": {
+        #       "are": {
+        #         "condition": {
+        #           "conditions": [
+        #             {
+        #               "value": [
+        #                 "82f0d0a1-84df-4af5-9fb8-57dca1950808"
+        #               ],
+        #               "operator": "IN",
+        #               "attribute": "nodeId",
+        #               "type": "atomic"
+        #             },
+        #             {
+        #               "value": [
+        #                 1472421600000,
+        #                 1475099999999
+        #               ],
+        #               "operator": "BETWEEN",
+        #               "attribute": "date",
+        #               "type": "atomic"
+        #             },
+        #             {
+        #               "value": "customerCreated",
+        #               "operator": "EQUALS",
+        #               "attribute": "type",
+        #               "type": "atomic"
+        #             }
+        #           ],
+        #           "conjunction": "and",
+        #           "type": "composite"
+        #         }
+        #       },
+        #       "name": "mySimpleQuery",
+        #       "type": "simple"
+        #     }
+        #   },
+        #   "tag": {
+        #     "operations": [
+        #       { "op": "REMOVE", "path": "/foo"},
+        #       { "op": "SET_CONSTANT", "path": "/baz", "value": "boo" },
+        #       { "op": "ADD_CONSTANT", "path": "/hello", "value": ["world"] },
+        #       { "op": "SUB_EVENT_PROPERTY", "path": "/customerPrice", "value": "/_price"},
+        #       { "op": "SUB_CONSTANT", "path": "/customerPrice2", "value": 2}
+        #     ]
+        #   },
+        #   "webhook": {
+        #     "url": "http://...",
+        #     "format": "JSON",
+        #     "body": {
+        #       "type": "LIST",
+        #       "contents": [
+        #         {"type": "CONSTANT", "key": "d","value": "/eventfield"},
+        #         {"type": "EVENT_PROPERTY", "key": "d", "value": "/constantvalue"}
+        #       ]
+        #     }
+        #   }
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: id-automation
+          in: path
+          description: Unique identifier of automation
+          required: true
+          type: string
+        - name: configuration
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AutomationConfigurationPayload'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AutomationConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - automations
+    delete:
+      description: Deletes a specific automation
+      summary: "Delete Automation"
+      operationId: deleteEventTriggerAutomationConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: id-automation
+          in: path
+          description: Unique identifier of automation
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+      tags:
+        - automations
+
+  # configuration
+  '/workspaces/{workspaceId}/configuration':
+    get:
+      description: Gets workspace parameters
+      summary: "Get Workspace parameters"
+      operationId: getConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/WorkspaceConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    put:
+      description: Modify workspace parameters
+      summary: "Modify Workspace parameters"
+      operationId: putConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: configuration
+          in: body
+          required: true
+          description: Object necessary to modify workspace parameters
+          schema:
+            $ref: '#/definitions/WorkspaceConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/WorkspaceConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/events':
+    get:
+      description: Gets list of built-in event
+      summary: "Get Events list"
+      operationId: getEventsConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              elements:
+                description: the list of event
+                type: array
+                items:
+                  $ref: '#/definitions/EventConfiguration'
+              page:
+                $ref: '#/definitions/Page'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/events/{id}':
+    get:
+      description: Gets details of built-in event
+      summary: "Get Event details"
+      operationId: getEventConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of event
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/EventConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    put:
+      description: Enable/Disable built-in event
+      summary: "Modify Event"
+      operationId: putEventConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of built-in
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: event
+          description: event object for enable or disable
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/EventConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/EventConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/nodes/entries':
+    get:
+      description: Gets list of entries node
+      summary: "Get Entries node"
+      operationId: getEntriesNodesConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              elements:
+                description: the list of node
+                type: array
+                items:
+                  $ref: '#/definitions/EntryNodeConfiguration'
+              page:
+                  $ref: '#/definitions/Page'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    post:
+      description: Creates new entry node
+      summary: "Create Entry node"
+      operationId: postEntryNodeConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: entryNode
+          description: The entry node object
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/PostEntryNodeConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/EntryNodeConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/nodes/entries/{id}':
+    get:
+      description: Gets details of a specific entry node
+      summary: "Get Entry node"
+      operationId: getEntryNodeConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of entry node
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/EntryNodeConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    put:
+      description: Modify a specific entry node
+      summary: "Modify Entry node"
+      operationId: putEntryNodeConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of entry node
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: entryNode
+          description: The entry node object
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/EntryNodeConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/EntryNodeConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/nodes/views':
+    get:
+      description: Gets list of view node
+      summary: "Get View nodes"
+      operationId: getViewsNodesConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              elements:
+                description: the list of node view
+                type: array
+                items:
+                  $ref: '#/definitions/ViewNodeConfiguration'
+              page:
+                $ref: '#/definitions/Page'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    post:
+      description: Create new view node
+      summary: "Create View node"
+      operationId: postViewNodeConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: viewNode
+          description: The view node object
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/PostViewNodeConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/ViewNodeConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/nodes/views/{id}':
+    get:
+      description: Gets details of a specific view node
+      summary: "Get View node"
+      operationId: getViewNodeConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of view node
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ViewNodeConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    put:
+      description: Modify a specific view node
+      summary: "Modify View node"
+      operationId: putViewNodeConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of view node
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: viewNode
+          description: The view node object
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ViewNodeConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ViewNodeConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    delete:
+      description: Deletes a specific view node
+      summary: "Delete View node"
+      operationId: deleteViewNodeConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of view node
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: "Bad Request"
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/nodes/node-hierarchy':
+    get:
+      description: Returns the hierarchy of the tree mapping the workspace organization
+      summary: "Get Node hierarchy"
+      operationId: getHierarchyNodesConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/NodeHierarchyConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    put:
+      description: Modify the hierarchy of the tree mapping the workspace organization
+      summary: "Modify Node hierarchy"
+      operationId: putHierarchyNodesConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: hierarchyNode
+          description: The node hierarchy object
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/NodeHierarchyConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/NodeHierarchyConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/properties/base':
+    get:
+      description: Gets all base properties
+      summary: "Get Base properties"
+      operationId: getBasePropertiesConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              elements:
+                description: the list of base properties
+                type: array
+                items:
+                  $ref: '#/definitions/BasePropertyConfiguration'
+
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/properties/base/{name}':
+    put:
+      description: Enable/Disable base properties
+      summary: "Modify Base property status"
+      operationId: putBasePropertyConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: name
+          in: path
+          description: The name of base customer property
+          required: true
+          type: string
+        - name: baseProperty
+          description: baseProperty object for enable or disable property
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/BasePropertyConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/BasePropertyConfiguration'
+        '400':
+          description: "Bad Request"
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/properties/extended':
+    get:
+      description: |
+        Gets extended properties configurated. The json schema of extended
+        property (including for every elements the contactlabProperties object
+        with property `label`, `enabled` and `mergePolicy` with value
+        OBJ_PRIORITY, OBJ_CONCATENATE, ARRAY_UNION, ARRAY_INTERSECTION,
+        MATH_SUM, MATH_AVG, MATH_DIFF, MATH_MIN, MATH_MAX).
+      summary: "Get Extended properties"
+      operationId: getExtendedPropertiesConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ExtendedPropertyConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    put:
+      description: |
+        Modify extended properties configurated. The json schema of extended
+        property (including for every elements the contactlabProperties object
+        with property `label`, `enabled` and `mergePolicy` with value
+        OBJ_PRIORITY, OBJ_CONCATENATE, ARRAY_UNION, ARRAY_INTERSECTION,
+        MATH_SUM, MATH_AVG, MATH_DIFF, MATH_MIN, MATH_MAX).
+      summary: "Modify Extended properties"
+      operationId: putExtendedPropertiesConfigurationWorkspaces
+    ##### EXAMPLE
+    #```json
+    #{
+    #  "name": "Webhook",
+    #  "enabled": true,
+    #  "nodes": [
+    #    "9d57e0e4-42cd-4b84-9eab-7dc28fb5a220"
+    #  ],
+    #  "delay": 3600,
+    #  "topic": {
+    #    "eventType": "addedProduct",
+    #    "customerType": "ANONYMOUS",
+    #    "eventContext": "WEB",
+    #    "query": {
+    #      "are": {
+    #        "condition": {
+    #          "conditions": [
+    #            {
+    #              "value": [
+    #                "82f0d0a1-84df-4af5-9fb8-57dca1950808"
+    #              ],
+    #              "operator": "IN",
+    #              "attribute": "nodeId",
+    #              "type": "atomic"
+    #            },
+    #            {
+    #              "value": [
+    #                1472421600000,
+    #                1475099999999
+    #              ],
+    #              "operator": "BETWEEN",
+    #              "attribute": "date",
+    #              "type": "atomic"
+    #            },
+    #            {
+    #              "value": "customerCreated",
+    #              "operator": "EQUALS",
+    #              "attribute": "type",
+    #              "type": "atomic"
+    #            }
+    #          ],
+    #          "conjunction": "and",
+    #          "type": "composite"
+    #        }
+    #      },
+    #      "name": "mySimpleQuery",
+    #      "type": "simple"
+    #    }
+    #  },
+    #  "tag": {
+    #    "operations": [
+    #      { "op": "SET_NULL", "path": "/foo"},
+    #      { "op": "SET_CONSTANT", "path": "/baz", "value": "boo" },
+    #      { "op": "ADD_CONSTANT", "path": "/hello", "value": ["world"] },
+    #      { "op": "SUB_EVENT_PROPERTY", "path": "/customerPrice", "value": "/_price"},
+    #      { "op": "SUB_CONSTANT", "path": "/customerPrice2", "value": 2}
+    #    ]
+    #  },
+    #  "webhook": {
+    #    "url": "http://...",
+    #    "format": "JSON",
+    #    "body": {
+    #      "type": "LIST",
+    #      "contents": [
+    #        {"type": "CONSTANT", "key": "d","value": "/eventfield"},
+    #        {"type": "EVENT_PROPERTY", "key": "d", "value": "/constantvalue"}
+    #      ]
+    #    }
+    #  }
+    #}
+    #```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: schema
+          description: >
+            The json necessary to define extended profile in json schema
+            standard
+          in: body
+          required: true
+          schema:
+            type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ExtendedPropertyConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/sources':
+    get:
+      description: Gets list of source configurated
+      summary: "Get Sources list"
+      operationId: getSourcesConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              elements:
+                description: the list of source configuration
+                type: array
+                items:
+                  $ref: '#/definitions/SourceConfiguration'
+              page:
+                $ref: '#/definitions/Page'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    post:
+      description: Create a new source
+      summary: "Modify Source"
+      operationId: postSourceConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: source
+          description: The source configuration object
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/PostSourceConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/SourceConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/sources/{id}':
+    get:
+      description: Gets source details
+      summary: "Get Source details"
+      operationId: getSourceConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of source
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/SourceConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    put:
+      description: Modify source
+      summary: "Modify Source"
+      operationId: putSourceConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of source
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: source
+          description: The source configuration object
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/PutSourceConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/SourceConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    delete:
+      description: Deletes source
+      summary: "Delete Source"
+      operationId: deleteSourceConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of source
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/sources/{id}/refresh-token':
+    post:
+      description: Refresh source token
+      summary: "Refresh Source token"
+      operationId: postSourceTokenConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of source
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/SourceConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/sources/priority':
+    get:
+      description: Gets source priority
+      summary: "Get Source priority"
+      operationId: getPrioritySourcesConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/SourcePriorityConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    put:
+      description: Modifies source priority
+      summary: "Modify Source priority"
+      operationId: putPrioritySourcesConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: sourcePriority
+          in: body
+          description: source priority object
+          required: true
+          schema:
+            $ref: '#/definitions/SourcePriorityConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/SourcePriorityConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/unique-customer-matching-policy':
+    get:
+      description: Gets unique customer matching policies for aggregations
+      summary: "Get Customer matching policy"
+      operationId: getUniqueCustomerMatchingPolicy
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/UniqueCustomerMatchingPolicyConfiguration'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    put:
+      description: Updates unique customer matching policies for aggregations
+      summary: "Modify Customer matching policy"
+      operationId: putUniqueCustomerMatchingPolicy
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: properties
+          in: body
+          description: The flag to enable/disable the property base.
+          required: true
+          schema:
+           $ref: '#/definitions/UniqueCustomerMatchingPolicyConfiguration'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/UniqueCustomerMatchingPolicyConfiguration'
+        '400':
+          description: "Bad Request"
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/users':
+    get:
+      description: Gets users
+      summary: "Get Users list"
+      operationId: getUsersConfigurationWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              elements:
+                description: the list of user
+                type: array
+                items:
+                  $ref: '#/definitions/User'
+              page:
+                $ref: '#/definitions/Page'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+  '/workspaces/{workspaceId}/configuration/users/{id}':
+    get:
+      description: Gets user details
+      summary: "Get User details"
+      operationId: getUserConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of user
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+    put:
+      description: Modify user nodes
+      summary: "Modify User"
+      operationId: putUserConfigurationWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of user
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: user
+          description: The user configuration object
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/PutUser'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+        '403':
+          description: Forbidden
+      tags:
+        - configuration
+
+  # customers
+  '/workspaces/{workspaceId}/customers':
+    get:
+      description: Gets list of customers
+      summary: "Get Customers list"
+      operationId: getCustomersWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: nodeId
+          in: query
+          description: Identifier of the node where you want to do the search
+          required: true
+          type: string
+        - name: externalId
+          in: query
+          description: The external id assigned to the customers
+          type: string
+        - name: query
+          in: query
+          description: Query for filter the customers
+          type: string
+        - name: fields
+          in: query
+          description: Comma-separated list of properties to include in the response
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedCustomer'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+    post:
+      description: Creates a new customer
+      summary: "Create Customer"
+      operationId: postCustomerWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: sessionId
+          in: query
+          description: The unique identifier of session
+          type: string
+        - name: customer
+          in: body
+          required: true
+          description: Object necessary to create customer
+          schema:
+            $ref: '#/definitions/PostCustomer'
+      security:
+         - Bearer: []
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/Customer'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{id}':
+    get:
+      description: Gets details of customer
+      summary: "Get Customer details"
+      operationId: getCustomerWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Customer'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+    patch:
+      description: Modifies partially the customer
+      summary: "Modify Customer"
+      operationId: patchCustomerWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: customer
+          in: body
+          description: The customer object
+          required: true
+          schema:
+            $ref: '#/definitions/PatchCustomer'
+        - name: sessionId
+          in: query
+          description: The unique identifier of session
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        200:
+          description: OK
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+    put:
+      description: Updates customer
+      summary: "Modify Customer"
+      operationId: putCustomerWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: customer
+          in: body
+          required: true
+          description: Object necessary to update customer
+          schema:
+            $ref: '#/definitions/PutCustomer'
+        - name: sessionId
+          in: query
+          description: The unique identifier of session
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Customer'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+    delete:
+      description: Deletes customer
+      summary: "Delete Customer"
+      operationId: deleteCustomerWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{id}/sources':
+    get:
+      description: Gets list of raw data from sources
+      summary: "Get Customer sources list"
+      operationId: getSourcesCustomerWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              elements:
+                description: the list of source customer
+                type: array
+                items:
+                  $ref: '#/definitions/SourceCustomer'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{id}/sources/{sourceId}':
+    get:
+      description: Gets raw data from a specific sources
+      summary: "Get Customer source details"
+      operationId: getSourceCustomerWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - name: sourceId
+          in: path
+          description: The unique identifier of source
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/SourceCustomer'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{customerId}/educations':
+    post:
+      description: Creates customer education
+      summary: "Create Customer education"
+      operationId: postEducationsCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: education
+          in: body
+          required: true
+          description: Object necessary to create customer education
+          schema:
+            $ref: '#/definitions/Education'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Education'
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{customerId}/educations/{id}':
+    get:
+      description: Gets details of customer education
+      summary: "Get Customer education"
+      operationId: getEducationCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer education
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Education'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+    put:
+      description: Modifies customer education
+      summary: "Modify Customer education"
+      operationId: putEducationCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer education
+          required: true
+          type: string
+        - name: education
+          in: body
+          required: true
+          description: Object necessary to update customer education
+          schema:
+            $ref: '#/definitions/Education'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Education'
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+    delete:
+      description: Deletes customer education
+      summary: "Delete Customer education"
+      operationId: deleteEducationCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer education
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{customerId}/likes':
+    post:
+      description: Creates customer like
+      summary: "Create Customer like"
+      operationId: postLikesCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: like
+          in: body
+          required: true
+          description: Object necessary to create customer like
+          schema:
+            $ref: '#/definitions/Like'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Like'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{customerId}/likes/{id}':
+    get:
+      description: Gets details of customer like
+      summary: "Get Customer like"
+      operationId: getLikeCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer like
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Like'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+    put:
+      description: Modifies customer like
+      summary: "Modify Customer like"
+      operationId: putLikeCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer like
+          required: true
+          type: string
+        - name: like
+          in: body
+          required: true
+          description: Object necessary to update customer like
+          schema:
+            $ref: '#/definitions/Like'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Like'
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+    delete:
+      description: Deletes customer like
+      summary: "Delete Customer like"
+      operationId: deleteLikeCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer like
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{customerId}/jobs':
+    post:
+      description: Creates customer job
+      summary: "Create Customer job"
+      operationId: postJobsCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: job
+          in: body
+          required: true
+          description: Object necessary to create customer job
+          schema:
+            $ref: '#/definitions/Job'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Job'
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{customerId}/jobs/{id}':
+    get:
+      description: Gets details of customer job
+      summary: "Get Customer job"
+      operationId: getJobCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer job
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Job'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+    put:
+      description: Modifies customer job
+      summary: "Modify Customer job"
+      operationId: putJobCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer job
+          required: true
+          type: string
+        - name: job
+          in: body
+          required: true
+          description: Object necessary to update customer job
+          schema:
+            $ref: '#/definitions/Job'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Job'
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+    delete:
+      description: Deletes customer job
+      summary: "Delete Customer job"
+      operationId: deleteJobCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer job
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{customerId}/subscriptions':
+    post:
+      description: Creates customer subscription
+      summary: "Create Customer subscription"
+      operationId: postSubscriptionsCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: subscription
+          in: body
+          required: true
+          description: Object necessary to create customer subscription
+          schema:
+            $ref: '#/definitions/Subscription'
+      security:
+         - Bearer: []
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/Subscription'
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{customerId}/subscriptions/{id}':
+    get:
+      description: Gets details of customer subscription
+      summary: "Get Customer subscription"
+      operationId: getSubscriptionCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer subscription
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Subscription'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+    put:
+      description: Modifies customer subscription
+      summary: "Modify Customer subscription"
+      operationId: putSubscriptionCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer subscription
+          required: true
+          type: string
+        - name: subscription
+          in: body
+          required: true
+          description: Object necessary to update customer subscription
+          schema:
+            $ref: '#/definitions/Subscription'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Subscription'
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+    delete:
+      description: Deletes customer subscription
+      summary: "Delete Customer subscription"
+      operationId: deleteSubscriptionCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of customer subscription
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '423':
+          description: Reindexing in progress
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{customerId}/sessions':
+    get:
+      description: Gets list of session assign to customer
+      summary: "Get Sessions list"
+      operationId: getSessionsCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              elements:
+                description: the list of session customer
+                type: array
+                items:
+                  $ref: '#/definitions/Session'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+    post:
+      description: Creates a session of customer
+      summary: "Create Session"
+      operationId: postSessionCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+        - name: session
+          in: body
+          required: true
+          description: Object necessary to create a session customer
+          schema:
+            type: object
+            properties:
+              value:
+                type: string
+                description: >-
+                  the session id of customer. the value is unique for a single node
+      security:
+         - Bearer: []
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/Session'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+  '/workspaces/{workspaceId}/customers/{customerId}/sessions/{sessionId}':
+    get:
+      description: Gets a specific sessions assigned at customer
+      summary: "Get Session details"
+      operationId: getSessionCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - name: sessionId
+          in: path
+          description: The unique identifier of session
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Session'
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+    delete:
+      description: Deletes session assigned at customer
+      summary: "Delete Session"
+      operationId: deleteSessionCustomerWorkspaces
+      parameters:
+        - name: customerId
+          in: path
+          description: The unique identifier of customer
+          required: true
+          type: string
+        - name: sessionId
+          in: path
+          description: The unique identifier of session
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+      tags:
+        - customers
+
+  # events
+  '/workspaces/{workspaceId}/events':
+    get:
+      description: Gets list of events
+      summary: "Get Events list"
+      operationId: getEventsWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: customerId
+          in: query
+          description: The unique identifier of customer
+          type: string
+        - name: nodeId
+          in: query
+          description: The node identifier
+          type: string
+        - name: type
+          in: query
+          description: One or more event types (separated by comma)
+          type: string
+        - name: context
+          in: query
+          description: One or more event context (separated by comma)
+          type: string
+        - name: mode
+          in: query
+          description: >-
+            the mode of event. ACTIVE if the customer made the event, PASSIVE if
+            the customer recive the event
+          type: string
+          enum:
+            - ACTIVE
+            - PASSIVE
+        - name: dateFrom
+          in: query
+          description: From datetime for search of event
+          type: string
+          format: date-time
+        - name: dateTo
+          in: query
+          description: To datetime for search of event
+          type: string
+          format: date-time
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedEvent'
+        '403':
+          description: Forbidden
+      tags:
+        - events
+    post:
+      description: Inserts new event
+      summary: "Create Event"
+      operationId: postEventWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: event
+          in: body
+          required: true
+          description: Object necessary to create an event
+          schema:
+            $ref: '#/definitions/PostEvent'
+      security:
+         - Bearer: []
+      responses:
+        '202':
+          description: Accepted
+          schema:
+            $ref: '#/definitions/PostResponseEvent'
+        '403':
+          description: Forbidden
+      tags:
+        - events
+  '/workspaces/{workspaceId}/events/{id}':
+    get:
+      description: Gets details of specific event
+      summary: "Get Event details"
+      operationId: getEventWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of event
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Event'
+        '403':
+          description: Forbidden
+      tags:
+        - events
+    put:
+      description: Modifies details of specific event
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of event
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '202':
+          description: The request has been accepted for processing
+          schema:
+            $ref: '#/definitions/PutEvent'
+        '403':
+          description: You don't have the necessary permissions for the resource
+      tags:
+        - events
+    delete:
+      description: Deletes a specific event
+      summary: "Delete Event"
+      operationId: deleteEventWorkspaces
+      parameters:
+        - name: id
+          in: path
+          description: The event identifier
+          required: true
+          type: string
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '204':
+          description: "No Content"
+        '403':
+          description: Forbidden
+        '404':
+          description: "Not Found"
+      tags:
+        - events
+
+  # models
+  '/workspaces/{workspaceId}/models/properties/base':
+    get:
+      description: >
+        Gets base properties. The json schema of base property (including for
+        every elements the contactlabProperties object with property `label`,
+        `enabled`.
+      summary: "Get Base properties"
+      operationId: getBasePropertiesModelsWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/BasePropertyModel'
+        '403':
+          description: Forbidden
+      tags:
+        - model
+  '/workspaces/{workspaceId}/models/merge-policies':
+    get:
+      description: Gets list of merge policies defined in contacthub
+      summary: "Get Merge policies list"
+      operationId: getMergePoliciesModelsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "elements":[
+        #     {
+        #       "id": "OBJ_PRIORITY",
+        #       "label": "Priority",
+        #       "description": "Substitution of value by defined priority",
+        #       "supportedTypes": ["string", "object", "number", "array"]
+        #     },
+        #     {
+        #       "id": "OBJ_CONCATENATE",
+        #       "label": "Concatenatennnnnnnnnnnnnnnnnnnnnn",
+        #       "description": "Concatenate value of property",
+        #       "supportedTypes": ["string", "number", "array"]
+        #     },
+        #     ........
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              elements:
+                description: the list of merge policy
+                type: array
+                items:
+                  $ref: '#/definitions/MergePolicy'
+        '403':
+          description: Forbidden
+      tags:
+        - model
+  '/workspaces/{workspaceId}/models/providers':
+    get:
+      description: Gets list of providers defined in contacthub
+      summary: "Get Providers list"
+      operationId: getProvidersModelsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "elements":[
+        #     {
+        #       "id": "API",
+        #       "label": "Contachub API",
+        #       "description": "contachub api",
+        #       "propertiesSchema": {
+        #         "allowedIPs": {
+        #           "description": "the list of IP addresses allowed to read and write a given source",
+        #           "type": "array",
+        #           "items": {
+        #             "type": "string",
+        #             "format": "ipv4"
+        #           }
+        #         }
+        #       }
+        #     },
+        #     {
+        #       "id": "JavaScript",
+        #       "label": "JavaScript website",
+        #       "description": "JavaScript website",
+        #       "propertiesSchema": {
+        #         "allowedURLs": {
+        #           "description": "the list of URLs allowed to write a given source",
+        #           "type": "array",
+        #           "items": {
+        #             "type": "string",
+        #             "format": "uri"
+        #           }
+        #         }
+        #       }
+        #     },
+        #     ........
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              elements:
+                description: the list of provider
+                type: array
+                items:
+                  $ref: '#/definitions/Provider'
+        '403':
+          description: Forbidden
+      tags:
+        - model
+  '/workspaces/{workspaceId}/models/contexts':
+    get:
+      description: Gets list of event contexts defined in contacthub
+      summary: "Get Contexts list"
+      operationId: getContextsModelsWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "elements":[
+        #     {
+        #       "id": "WEB",
+        #       "label": "Web event",
+        #       "description": "Events made in web context",
+        #       "propertiesSchema": {
+        #         "type": "object",
+        #         "$schema": "http://api.contactlab.it/hub#",
+        #         "additionalProperties": false,
+        #         "properties": {
+        #           "client": {
+        #             "type": "object",
+        #             "properties": {
+        #               "userAgent": {
+        #                 "type": "string"
+        #               },
+        #               "ip": {
+        #                 "type": "string",
+        #                 "format": "ipv4-cidr"
+        #               }
+        #             }
+        #           }
+        #         }
+        #       }
+        #     },
+        #     {
+        #       "id": "MOBILE",
+        #       "label": "Mobile event",
+        #       "description": "Events made in mobile context"
+        #     },
+        #     ........
+        #   ]
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              elements:
+                description: the list of context
+                type: array
+                items:
+                  $ref: '#/definitions/Context'
+        '403':
+          description: Forbidden
+      tags:
+        - model
+
+  # segments
+  '/workspaces/{workspaceId}/segments':
+    get:
+      description: Gets list of segments
+      summary: "Get Segments list"
+      operationId: getSegmentsWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: name
+          in: query
+          description: Query for filter by name the segment
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedSegment'
+        '403':
+          description: Forbidden
+      tags:
+        - segment
+    post:
+      description: Inserts a new segment
+      summary: "Create Segment"
+      operationId: postSegmentWorkspaces
+        #
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "name": "segment with 2 conditions",
+        #   "query": {
+        #            "type": "simple",
+        #            "name": "query rossi-brambilla",
+        #            "are": {
+        #                    "condition": {
+        #                            "type": "composite",
+        #                            "conjunction": "or",
+        #                            "conditions": [{
+        #                                   "type": "atomic",
+        #                                   "attribute": "user.surname",
+        #                                   "operator": "EQUALS",
+        #                                   "value": "ROSSI"
+        #                            }, {
+        #                                   "type": "atomic",
+        #                                   "attribute": "user.surname",
+        #                                   "operator": "EQUALS",
+        #                                   "value": "BRAMBILLA"
+        #                            }]
+        #                    }
+        #            }
+        #   },
+        #   "enable": true
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: segment
+          in: body
+          description: Object necessary to create segment
+          required: true
+          schema:
+            $ref: '#/definitions/PostSegment'
+      security:
+         - Bearer: []
+      responses:
+        '201':
+          description: Created
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Segment'
+        '403':
+          description: Forbidden
+      tags:
+        - segment
+  '/workspaces/{workspaceId}/segments/{id}':
+    get:
+      description: Details of specific segment
+      summary: "Get Segment details"
+      operationId: getSegmentWorkspaces
+        # #### EXAMPLE
+        # ```json
+        # {
+        #   "id": "059a4855-f304-4dbc-9e11-d1163aa96b0c",
+        #   "name": "segment with 2 conditions",
+        #   "query": {
+        #            "type": "simple",
+        #            "name": "query rossi-brambilla",
+        #            "are": {
+        #                    "condition": {
+        #                            "type": "composite",
+        #                            "conjunction": "or",
+        #                            "conditions": [{
+        #                                   "type": "atomic",
+        #                                   "attribute": "user.surname",
+        #                                   "operator": "EQUALS",
+        #                                   "value": "ROSSI"
+        #                            }, {
+        #                                   "type": "atomic",
+        #                                   "attribute": "user.surname",
+        #                                   "operator": "EQUALS",
+        #                                   "value": "BRAMBILLA"
+        #                            }]
+        #                    }
+        #            }
+        #   },
+        #   "createdAt": "2016-02-23T09:26:33Z",
+        #   "updatedAt": "2016-02-23T09:26:44Z",
+        #   "enable": true
+        # }
+        # ```
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of segment
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Segment'
+        '403':
+          description: Forbidden
+      tags:
+        - segment
+    put:
+      description: Modifies a specific segment
+      summary: "Modify Segment"
+      operationId: putSegmentWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of segment
+          required: true
+          type: string
+        - name: segment
+          in: body
+          description: Object necessary to update segment
+          required: true
+          schema:
+            $ref: '#/definitions/PutSegment'
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Segment'
+        '403':
+          description: Forbidden
+      tags:
+        - segment
+    delete:
+      description: Deletes a specific segment
+      summary: "Delete Segment"
+      operationId: deleteSegmentWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of segment
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Segment'
+        '403':
+          description: Forbidden
+      tags:
+        - segment
+  '/workspaces/{workspaceId}/segments/{id}/customers':
+    get:
+      description: >
+        List of customer in a specific segment.
+        The output it's a list of id. For other property specify with paramenters fields
+      summary: "Get Segment customers"
+      operationId: getCustomersSegmentWorkspaces
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: id
+          in: path
+          description: The unique identifier of segment
+          required: true
+          type: string
+        - name: fields
+          in: query
+          description: Comma-separated list of properties to include in the response
+          required: true
+          type: string
+        - name: nodeId
+          in: query
+          description: The identifier of node where you want made the query
+          required: true
+          type: string
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedCustomer'
+        '403':
+          description: Forbidden
+      tags:
+        - segment
+
+  # updates
+  '/workspaces/{workspaceId}/updates/last-offset':
+    get:
+      description: get the offset of the last update to any customer or event
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - $ref: "#/parameters/nodeId"
+        - $ref: "#/parameters/entity"
+      produces:
+        - application/json
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: the offset has been returned
+          schema:
+            $ref: '#/definitions/LastOffsetResponse'
+      tags:
+        - updates
+
+  '/workspaces/{workspaceId}/updates':
+    get:
+      description: get the stream of updates on customers and events
+      parameters:
+        - $ref: "#/parameters/workspaceId"
+        - name: size
+          in: query
+          description: 'Paging: the page size'
+          type: integer
+          default: 50
+          minimum: 0
+          maximum: 4000
+          required: false
+        - $ref: "#/parameters/timestamp"
+        - $ref: "#/parameters/offset"
+        - $ref: "#/parameters/nodeId"
+        - $ref: "#/parameters/entity"
+      produces:
+        - application/json
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/UpdatesResponse'
+      tags:
+        - updates
+
+  # user
+  '/me':
+    get:
+      description: Gets all the info of user
+      summary: "Get User info"
+      operationId: getMe
+      security:
+         - Bearer: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/UserInfo'
+        '403':
+          description: Forbidden
+      tags:
+        - user
+
+########################################################## DEFINITIONS ###############################################################
+definitions:
+  # analytics
+  AnalyticDistributionCustomerNode:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Analytics name
+      headers:
+        type: object
+        description: Schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+          nodes:
+            description: The list of node identifiers separated by comma
+            type: string
+      data:
+        type: array
+        description: List of data aggregated by node identifiers
+        items:
+          $ref: '#/definitions/AnalyticDistributionCustomerNodeValue'
+  AnalyticDistributionCustomerNodeValue:
+    type: array
+    description: Distribution for node of 'customerCreated' events
+    items:
+      type: object
+      properties:
+        nodeId:
+          type: string
+          description: Node identifier
+        count:
+          type: integer
+          description: Count of events
+  AnalyticDistributionCustomerSource:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Analytics name
+      headers:
+        type: object
+        description: Schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: Eend date
+            type: string
+            format: date
+          nodes:
+            description: The list of node identifiers separated by comma
+            type: string
+      data:
+        type: array
+        description: List of data aggregated by node and source identifiers
+        items:
+          $ref: '#/definitions/AnalyticDistributionCustomerSourceValue'
+  AnalyticDistributionCustomerSourceValue:
+    type: array
+    description: Distribution for node and source of 'customerCreated' events
+    items:
+      type: object
+      properties:
+        nodeId:
+          type: string
+          description: Node identifier
+        values:
+          type: array
+          description: Distribution for sources of events
+          items:
+            type: object
+            properties:
+              sourceId:
+                type: string
+                description: Source identifier
+              count:
+                type: integer
+                description: Count of events
+  AnalyticDistributionCustomerTime:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Analytics name
+      headers:
+        type: object
+        description: Schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          mode:
+            description: Distribution mode
+            type: string
+            enum:
+              - DAYOFWEEK
+              - HOUROFDAY
+              - DAYOFMONTH
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+          nodes:
+            description: The list of node identifiers separated by comma
+            type: string
+      data:
+        type: array
+        description: List of data aggregated by node identifiers and time format
+        items:
+          $ref: '#/definitions/AnalyticDistributionCustomerTimeValue'
+  AnalyticDistributionCustomerTimeValue:
+    type: array
+    description: Distribution for node and time of 'customerCreated' events
+    items:
+      type: object
+      properties:
+        nodeId:
+          type: string
+          description: Node identifier
+        values:
+          type: array
+          description: Distribution for time of events
+          items:
+            type: object
+            properties:
+              time:
+                type: string
+                description: Time label
+              count:
+                type: integer
+                description: Count of events
+  AnalyticDistributionEventNode:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Analytics name
+      headers:
+        type: object
+        description: Schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          context:
+            $ref: '#/definitions/EventContext'
+          eventType:
+            $ref: '#/definitions/EventType'
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+          nodes:
+            description: The list of node identifiers separated by comma
+            type: string
+      data:
+        type: array
+        description: List of data aggregated by node identifiers
+        items:
+          $ref: '#/definitions/AnalyticDistributionEventNodeValue'
+  AnalyticDistributionEventNodeValue:
+    type: array
+    description: Distribution for node of events
+    items:
+      type: object
+      properties:
+        nodeId:
+          type: string
+          description: Node identifier
+        count:
+          type: integer
+          description: Count of events
+  AnalyticDistributionEventSource:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Analytics name
+      headers:
+        type: object
+        description: Schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          context:
+            $ref: '#/definitions/EventContext'
+          eventType:
+            $ref: '#/definitions/EventType'
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: Eend date
+            type: string
+            format: date
+          nodes:
+            description: The list of node identifiers separated by comma
+            type: string
+      data:
+        type: array
+        description: List of data aggregated by node and source identifiers
+        items:
+          $ref: '#/definitions/AnalyticDistributionEventSourceValue'
+  AnalyticDistributionEventSourceValue:
+    type: array
+    description: Distribution for node and source of events
+    items:
+      type: object
+      properties:
+        nodeId:
+          type: string
+          description: Node identifier
+        values:
+          type: array
+          description: Distribution for sources of events
+          items:
+            type: object
+            properties:
+              sourceId:
+                type: string
+                description: Source identifier
+              count:
+                type: integer
+                description: Count of events
+  AnalyticDistributionEventTime:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Analytics name
+      headers:
+        type: object
+        description: Schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          mode:
+            description: Distribution mode
+            type: string
+            enum:
+              - DAYOFWEEK
+              - HOUROFDAY
+              - DAYOFMONTH
+          context:
+            $ref: '#/definitions/EventContext'
+          eventType:
+            $ref: '#/definitions/EventType'
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+          nodes:
+            description: The list of node identifiers separated by comma
+            type: string
+      data:
+        type: array
+        description: List of data aggregated by node identifiers and time format
+        items:
+          $ref: '#/definitions/AnalyticDistributionEventTimeValue'
+  AnalyticDistributionEventTimeValue:
+    type: array
+    description: Distribution for node and time of events
+    items:
+      type: object
+      properties:
+        nodeId:
+          type: string
+          description: Node identifier
+        values:
+          type: array
+          description: Distribution for time of events
+          items:
+            type: object
+            properties:
+              time:
+                type: string
+                description: Time label
+              count:
+                type: integer
+                description: Count of event
+  AnalyticQueryCustomerDistribution:
+    type: "object"
+    properties:
+      name:
+        type: object
+        description: Description for this object
+      parameters:
+        type: object
+        description: Object that reports request parameters
+      headers:
+        type: object
+        description: A JSON schema object for 'data' object
+      data:
+        type: object
+        properties:
+          nodeId:
+            description: Node identifier
+            type: string
+          distribution:
+            description: Distribution list
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  description: Name of distribution field
+                  type: string
+                distribution:
+                  description: Sub-distribution list
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        description: Name of distribution field
+                        type: string
+                      value:
+                        description: Value of metric aggregation
+                        type: number
+  AnalyticQueryDistributionResp:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Analytics name
+      headers:
+        type: object
+        description: Schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          nodeId:
+            description: Node identifier
+            type: string
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+          eventType:
+            $ref: '#/definitions/EventType'
+          context:
+            $ref: '#/definitions/EventContext'
+          optionalFilters:
+            description: Additional Filters
+            type: array
+            items:
+              type: object
+              properties:
+                fieldPath:
+                  type: string
+                  description: Json path of property
+                value:
+                  type: string
+                  description: Property value
+          aggregation:
+            type: object
+            properties:
+              operator:
+                description: Metric Operator
+                type: string
+                enum:
+                 - SUM
+                 - COUNT
+                 - COUNT_DISTINCT
+              fieldPath:
+                type: string
+                description: Json path of aggregation property
+              optionalFilters:
+                description: Additional Filters
+                type: array
+                items:
+                  type: object
+                  properties:
+                    fieldPath:
+                      type: string
+                      description: Json path of property
+                    value:
+                      type: string
+                      description: Property value
+          distributionField:
+            type: object
+            properties:
+              entity:
+                description: Entity of distribution field
+                type: string
+                enum:
+                 - EVENT
+                 - CUSTOMER
+              path:
+                type: string
+                description: Json path of distribution property
+      data:
+        type: object
+        properties:
+          nodeId:
+            description: Node Identifier
+            type: string
+          distribution:
+            description: distribution values
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  description: Data of distribution
+                  type: string
+                value:
+                  description: metric value
+                  type: number
+  AnalyticQueryEventDistribution:
+    type: "object"
+    properties:
+      name:
+        type: object
+        description: Description for this object
+      parameters:
+        type: object
+        description: Object that reports request parameters
+      headers:
+        type: object
+        description: A JSON schema object for 'data' object
+      data:
+        type: object
+        properties:
+          nodeId:
+            description: Node identifier
+            type: string
+          distribution:
+            description: Distribution list
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  description: Name of distribution field
+                  type: string
+                distribution:
+                  description: Sub-distribution list
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        description: Name of distribution field
+                        type: string
+                      value:
+                        description: Value of metric aggregation
+                        type: number
+  AnalyticQueryNumericResp:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Analytics name
+      headers:
+        type: object
+        description: Schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          nodeId:
+            description: Node identifier
+            type: string
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+          eventType:
+            $ref: '#/definitions/EventType'
+          context:
+            $ref: '#/definitions/EventContext'
+          optionalFilters:
+            description: Additional Filters
+            type: array
+            items:
+              type: object
+              properties:
+                fieldPath:
+                  type: string
+                  description: Json path of property
+                value:
+                  type: string
+                  description: Property value
+          aggregation:
+            type: object
+            properties:
+              operator:
+                description: Metric Operator
+                type: string
+                enum:
+                 - SUM
+                 - COUNT
+                 - COUNT_DISTINCT
+              fieldPath:
+                type: string
+                description: Json path of aggregation property
+              optionalFilters:
+                description: Additional Filters
+                type: array
+                items:
+                  type: object
+                  properties:
+                    fieldPath:
+                      type: string
+                      description: Json path of property
+                    value:
+                      type: string
+                      description: Property value
+      data:
+        type: object
+        properties:
+          nodeId:
+            description: Node Identifier
+            type: string
+          value:
+            description: metric value
+            type: number
+  AnalyticQueryTrendResp:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Analytics name
+      headers:
+        type: object
+        description: Schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          nodeId:
+            description: Node identifier
+            type: string
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+          eventType:
+            $ref: '#/definitions/EventType'
+          context:
+            $ref: '#/definitions/EventContext'
+          optionalFilters:
+            description: Additional Filters
+            type: array
+            items:
+              type: object
+              properties:
+                fieldPath:
+                  type: string
+                  description: Json path of property
+                value:
+                  type: string
+                  description: Property value
+          aggregation:
+            type: object
+            properties:
+              operator:
+                description: Metric Operator
+                type: string
+                enum:
+                 - SUM
+                 - COUNT
+                 - COUNT_DISTINCT
+              fieldPath:
+                type: string
+                description: Json path of aggregation property
+              optionalFilters:
+                description: Additional Filters
+                type: array
+                items:
+                  type: object
+                  properties:
+                    fieldPath:
+                      type: string
+                      description: Json path of property
+                    value:
+                      type: string
+                      description: Property value
+          mode:
+            description: Mode of aggretation daily, weekly, monthly
+            type: string
+            enum:
+              - DAILY
+              - WEEKLY
+              - MONTHLY
+      data:
+        type: object
+        properties:
+          nodeId:
+            description: Node Identifier
+            type: string
+          values:
+            description: metric values
+            type: array
+            items:
+              type: object
+              properties:
+                time:
+                  description: Date referral to mode defined in request
+                  type: string
+                new:
+                  description: metric value
+                  type: number
+                total:
+                  description: metric total value
+                  type: number
+  AnalyticQueryCustomerAcquisitionDistribution:
+    type: "object"
+    properties:
+      name:
+        type: object
+        description: Description for this object
+      parameters:
+        type: object
+        description: Object that reports request parameters
+      headers:
+        type: object
+        description: A JSON schema object for 'data' object
+      data:
+        type: object
+        properties:
+          nodeId:
+            description: Node identifier
+            type: string
+          distribution:
+            description: Distribution list
+            type: array
+            items:
+                properties:
+                  name:
+                    description: Name of distribution field
+                    type: string
+                  value:
+                    description: Value of metric aggregation
+                    type: number
+  CompositionAgeRange:
+    type: object
+    properties:
+      name:
+        type: string
+        description: the analytics name
+      headers:
+        type: object
+        description: the schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          nodes:
+            description: The list of nodeId separated by comma
+            type: string
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+      data:
+        type: array
+        description: list of node
+        items:
+          type: object
+          properties:
+            nodeId:
+              description: id of node
+              type: string
+            distribution:
+              type: array
+              items:
+                $ref: '#/definitions/CompositionAgeRangeValue'
+  CompositionAgeRangeValue:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Age range name
+        value:
+          type: string
+          description: Value for Age range
+  CompositionGender:
+    type: object
+    properties:
+      name:
+        type: string
+        description: the analytics name
+      headers:
+        type: object
+        description: the schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          nodes:
+            description: The list of nodeId separated by comma
+            type: string
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+      data:
+        type: array
+        description: list of node
+        items:
+          type: object
+          properties:
+            nodeId:
+              description: id of node
+              type: string
+            distribution:
+              type: array
+              items:
+                $ref: '#/definitions/CompositionGenderValue'
+  CompositionGenderValue:
+    type: object
+    properties:
+      name:
+        type: string
+        description: gender name
+      value:
+        type: string
+        description: Value for gender
+  CompositionGeoCity:
+    type: object
+    properties:
+      name:
+        type: string
+        description: the analytics name
+      headers:
+        type: object
+        description: the schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          nodes:
+            description: The list of nodeId separated by comma
+            type: string
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+          country:
+            description: The name of country to filter
+            type: string
+      data:
+        type: array
+        description: list of node
+        items:
+          type: object
+          properties:
+            nodeId:
+              description: id of node
+              type: string
+            distribution:
+              type: array
+              items:
+                $ref: '#/definitions/CompositionGeoCityValue'
+  CompositionGeoCityValue:
+    type: object
+    properties:
+      name:
+        type: string
+        description: City name
+      value:
+        type: string
+        description: Value for city
+  CompositionGeoCountry:
+    type: object
+    properties:
+      name:
+        type: string
+        description: the analytics name
+      headers:
+        type: object
+        description: the schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          nodes:
+            description: The list of nodeId separated by comma
+            type: string
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+      data:
+        type: array
+        description: list of node
+        items:
+          type: object
+          properties:
+            nodeId:
+              description: id of node
+              type: string
+            distribution:
+              type: array
+              items:
+                $ref: '#/definitions/CompositionGeoCountryValue'
+  CompositionGeoCountryValue:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Country name
+      value:
+        type: string
+        description: Value for country
+  EventContext:
+    type: string
+    description: Context of the target event/s
+    enum:
+      - WEB
+      - MOBILE
+      - ECOMMERCE
+      - RETAIL
+      - SOCIAL
+      - DIGITAL_CAMPAIGN
+      - CONTACT_CENTER
+      - IOT
+      - OTHER
+  CustomerCount:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Analytics name
+      headers:
+        type: object
+        description: Schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          nodes:
+            description: The list of node identifiers separated by comma
+            type: string
+          startDate:
+            description: Start date
+            type: string
+            format: date
+          endDate:
+            description: End date
+            type: string
+            format: date
+      data:
+        type: array
+        description: Customer count by input node
+        items:
+          $ref: '#/definitions/CustomerCountValue'
+  CustomerCountValue:
+    type: array
+    description: Customer count by input nodes
+    items:
+      type: object
+      properties:
+        nodeId:
+          type: string
+          description: Customer state
+        count:
+          type: integer
+          description: Customer count
+  EventTrend:
+    type: object
+    properties:
+      name:
+        type: string
+        description: the analytics name
+      headers:
+        type: object
+        description: the schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          mode:
+            description: Mode of aggretation daily, weekly,monthly
+            type: string
+            enum:
+              - DAILY
+              - WEEKLY
+              - MONTHLY
+            default: DAILY
+          startDate:
+            description: The start date for get the trend
+            type: string
+            format: date
+          endDate:
+            description: The end date for get the trend
+            type: string
+            format: date
+          nodes:
+            description: The list of nodeId separated by comma
+            type: string
+          context:
+            $ref: '#/definitions/EventContext'
+          eventType:
+            $ref: '#/definitions/EventType'
+      data:
+        type: array
+        description: list of node
+        items:
+          type: object
+          properties:
+            nodeId:
+              description: id of node
+              type: string
+            values:
+              type: array
+              items:
+                $ref: '#/definitions/TrendValue'
+  EventType:
+    type: string
+    description: Type of the target event/s
+    enum:
+      - abandonedCart
+      - addedCompare
+      - addedProduct
+      - addedWishlist
+      - campaignBlacklisted
+      - campaignBounced
+      - campaignLinkClicked
+      - campaignMarkedSpam
+      - campaignOpened
+      - campaignSent
+      - campaignSubscribed
+      - campaignUnsubscribed
+      - changedSetting
+      - clickedLink
+      - closedTicket
+      - completedOrder
+      - eventConfirmed
+      - eventDeclined
+      - eventEligible
+      - eventInvited
+      - eventNoShow
+      - eventNotInvited
+      - eventParticipated
+      - eventRegistered
+      - formCompiled
+      - genericActiveEvent
+      - genericPassiveEvent
+      - loggedIn
+      - loggedOut
+      - openedTicket
+      - orderShipped
+      - removedCompare
+      - removedProduct
+      - removedWishlist
+      - repliedTicket
+      - reviewedProduct
+      - searched
+      - serviceSubscribed
+      - serviceUnsubscribed
+      - viewedPage
+      - viewedProduct
+      - viewedProductCategory
+  Trend:
+    type: object
+    properties:
+      name:
+        type: string
+        description: the analytics name
+      headers:
+        type: object
+        description: the schema of object inside data property list
+      parameters:
+        type: object
+        properties:
+          mode:
+            description: Mode of aggretation daily, weekly,monthly
+            type: string
+            enum:
+              - DAILY
+              - WEEKLY
+              - MONTHLY
+            default: DAILY
+          startDate:
+            description: The start date for get the trend
+            type: string
+            format: date
+          endDate:
+            description: The end date for get the trend
+            type: string
+            format: date
+          nodes:
+            description: The list of nodeId separated by comma
+            type: string
+      data:
+        type: array
+        description: list of node
+        items:
+          type: object
+          properties:
+            nodeId:
+              description: id of node
+              type: string
+            values:
+              type: array
+              items:
+                $ref: '#/definitions/TrendValue'
+  TrendValue:
+    type: object
+    properties:
+      time:
+        type: string
+        description: Date referral to mode defined in request
+      new:
+        type: integer
+        description: Number of new customers
+      lost:
+        type: integer
+        description: Number of lost customers
+      total:
+        type: integer
+        description: Number of total customer in the node
+
+  # automations
+  ActionTagType:
+    type: object
+    description: Object that represents a "TAG" action
+    properties:
+      operations:
+        type: array
+        items:
+          type: object
+          properties:
+            op:
+              $ref: '#/definitions/AutomationOperation'
+            path:
+              type: string
+            value:
+              type: object
+  ActionWebhookType:
+    type: object
+    description: Object that represents a "WEBHOOK" action
+    properties:
+      url:
+        type: string
+        format: uri
+      format:
+        type: string
+        enum:
+          - JSON
+          - XML
+      body:
+        type: object
+        properties:
+          type:
+            type: string
+            enum:
+              - LIST
+              - KEY_VALUE
+          content:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                key:
+                  type: string
+                value:
+                  type: object
+  AutomationConfiguration:
+    type: object
+    description: Workspace provisioning configuration
+    properties:
+      id:
+        type: string
+        description: Automation configuration's identifier
+      name:
+        type: string
+        description: Automation configuration's name
+      enabled:
+        type: boolean
+        description: Flag that specifies if the automation is enabled
+      nodes:
+        type: array
+        description: List of nodes
+        items:
+          type: string
+      delay:
+        type: integer
+        "minimum": 0
+        "maximum": 604800
+        description: Seconds to wait until automation start after triggering
+      topic:
+        type: object
+        description: Object that represents a binding with the target event/s
+        properties:
+          eventType:
+            $ref: '#/definitions/EventType'
+          customerType:
+            type: string
+            description: Type of customer
+            enum:
+              - ANONYMOUS
+              - KNONW
+              - ANY
+          eventContext:
+            $ref: '#/definitions/EventContext'
+          query:
+            type: object
+      tag:
+        $ref: '#/definitions/ActionTagType'
+      webhook:
+        $ref: '#/definitions/ActionWebhookType'
+  AutomationConfigurationPayload:
+    type: object
+    description: Workspace provisioning configuration
+    properties:
+      name:
+        type: string
+        description: Automation configuration's name
+      enabled:
+        type: boolean
+        description: Flag that specifies if the automation is enabled
+      nodes:
+        type: array
+        description: List of nodes
+        items:
+          type: string
+      delay:
+        type: integer
+        "minimum": 0
+        "maximum": 604800
+        description: Seconds to wait until automation start after triggering
+      topic:
+        type: object
+        description: Object that represents a binding with the target event/s
+        properties:
+          eventType:
+            $ref: '#/definitions/EventType'
+          customerType:
+            type: string
+            description: Type of customer
+            enum:
+              - ANONYMOUS
+              - KNONW
+              - ANY
+          eventContext:
+            $ref: '#/definitions/EventContext'
+          query:
+            type: object
+      tag:
+        $ref: '#/definitions/ActionTagType'
+      webhook:
+        $ref: '#/definitions/ActionWebhookType'
+  AutomationOperation:
+    type: string
+    enum:
+      - CLEAR
+      - SET_NULL
+      - ADD_CONSTANT
+      - ADD_EVENT_PROPERTY
+      - SET_CONSTANT
+      - SET_EVENT_PROPERTY
+      - SUB_CONSTANT
+      - SUB_EVENT_PROPERTY
+  PagedAutomationConfigurationValues:
+    type: object
+    properties:
+      elements:
+        type: array
+        description: List of workspaces provisioning configurations
+        items:
+          $ref: '#/definitions/AutomationConfiguration'
+      page:
+        $ref: '#/definitions/Page'
+
+  # configuration
+  BasePropertyConfiguration:
+    type: object
+    properties:
+      name:
+        type: string
+        description: the name of base property
+      description:
+        type: string
+        description: the description of base property
+      enabled:
+        type: boolean
+        description: flag for enable/disable the base property
+  EntryNodeConfiguration:
+    allOf:
+      - $ref: '#/definitions/PostEntryNodeConfiguration'
+      - type: object
+        properties:
+          id:
+            type: string
+            description: the identifier of entry node
+            readOnly: true
+  EventConfiguration:
+    type: object
+    properties:
+      id:
+        type: string
+        description: unique identifier of event
+        readOnly: true
+      type:
+        type: string
+        description: the type of event
+        readOnly: true
+      mode:
+        type: string
+        enum:
+          - ACTIVE
+          - PASSIVE
+        default: ACTIVE
+        description: >-
+          the mode of event. ACTIVE if the customer made the event, PASSIVE if
+          the customer recive the event
+        readOnly: true
+      label:
+        type: string
+        description: the label of event
+        readOnly: true
+      description:
+        type: string
+        description: the description of event
+        readOnly: true
+      propertiesSchema:
+        type: string
+        description: json schema of event properties
+        readOnly: true
+      enabled:
+        type: boolean
+        description: flag for enable-disable event
+        default: true
+  ExtendedPropertyConfiguration:
+    type: object
+    properties:
+      schema:
+        type: string
+        description: >-
+          the json schema of extended property (including for every elements the
+          contactlabProperties object with property `label`, `enabled` and
+          `mergePolicy` with value OBJ_PRIORITY, OBJ_CONCATENATE, ARRAY_UNION,
+          ARRAY_INTERSECTION, MATH_SUM, MATH_AVG, MATH_DIFF, MATH_MIN,
+          MATH_MAX).
+  NodeHierarchyConfiguration:
+    type: object
+    properties:
+      tree:
+        $ref: '#/definitions/TreeNode'
+  NodePermission:
+    type: object
+    properties:
+      id:
+        type: string
+        description: unique identifier of node
+      permission:
+        type: string
+        enum:
+          - R
+          - RW
+          - W
+        default: R
+        description: permission mode
+  Page:
+    type: object
+    properties:
+      size:
+        description: the requested size of the page
+        type: integer
+      totalElements:
+        description: total number of elements available
+        type: integer
+      totalPages:
+        description: how many pages are available in total
+        type: integer
+      number:
+        description: the number of the current page
+        type: integer
+  PostEntryNodeConfiguration:
+    type: object
+    properties:
+      name:
+        type: string
+        description: the name of entry node
+      description:
+        type: string
+        description: the description of entry node
+      imageUrl:
+        type: string
+        format: uri
+        description: the url of logo
+      sourcePriority:
+        type: array
+        items:
+          type: string
+        description: array of source `id`
+      mandatoryProperties:
+        type: array
+        items:
+          type: string
+        description: array of mandatory properties
+  PostSourceConfiguration:
+    type: object
+    properties:
+      provider:
+        type: string
+        enum:
+          - API
+          - JavaScript
+          - MAGENTO
+          - CONTACTSEND
+          - CONTACTPLAN
+          - ANDROID_SDK
+          - OBJECTIVEC_SDK
+          - NODEJS_SDK
+          - JAVA_SDK
+          - SCALA_SDK
+          - DOTNET_SDK
+        default: API
+        description: the provider of source
+      name:
+        type: string
+        description: the name of source
+      description:
+        type: string
+        description: the description of source
+      properties:
+        type: object
+        description: the properties required by the selected provider
+      nodes:
+        type: array
+        items:
+          type: string
+        description: list of unique identifier where source is enabled
+      enabled:
+        type: boolean
+        description: flag for enable-disable source
+        default: true
+    required: [provider, name, nodes, properties]
+  PostViewNodeConfiguration:
+    type: object
+    properties:
+      name:
+        type: string
+        description: the name of view node
+      description:
+        type: string
+        description: the description of view node
+      imageUrl:
+        type: string
+        format: uri
+        description: the url of logo
+  PutSourceConfiguration:
+    allOf:
+      - $ref: '#/definitions/PostSourceConfiguration'
+      - type: object
+        properties:
+          id:
+            type: string
+            description: unique identifier of source
+  PutUser:
+    type: object
+    properties:
+      nodes:
+        type: array
+        items:
+          $ref: '#/definitions/NodePermission'
+    required: [nodes]
+  SourceConfiguration:
+    allOf:
+      - $ref: '#/definitions/PutSourceConfiguration'
+      - type: object
+        properties:
+          token:
+            type: string
+            description: the source token
+            readOnly: true
+  SourcePriorityConfiguration:
+    type: object
+    properties:
+      priority:
+        type: array
+        items:
+          type: string
+        description: list of source id ordered by descending priority
+  TreeNode:
+    type: object
+    properties:
+      id:
+        type: string
+        description: the id of entry or view node
+      children:
+        type: array
+        items:
+          $ref: '#/definitions/TreeNode'
+        description: the list of children nodes
+      nodePriority:
+        type: array
+        items:
+          type: string
+        description: array of entry node `id`
+  UniqueCustomerMatchingPolicyConfiguration:
+    type: object
+    properties:
+      properties:
+        type: array
+        items:
+          type: string
+        description: Rules of aggregations
+      caseSensitive:
+        type: boolean
+        description: >-
+          Flag that specifies if the matching policy check will be performed
+          considering the field text case.
+  ViewNodeConfiguration:
+    allOf:
+      - $ref: '#/definitions/PostViewNodeConfiguration'
+      - type: object
+        properties:
+          id:
+            type: string
+            description: the identifier of view node
+            readOnly: true
+  WorkspaceConfiguration:
+    type: object
+    properties:
+      name:
+        type: string
+        description: name of workspace
+      industry:
+        type: string
+        description: industry of workspace
+        enum:
+          - GDO
+          - Luxury
+          - Automotive
+          - NotDefined
+        default: NotDefined
+      logo:
+        type: string
+        description: url of workspace logo
+      timezone:
+        type: string
+        description: default timezone of workspace
+        enum:
+          - Europe/Rome
+          - Europe/Paris
+          - Europe/London
+        default: Europe/Rome
+      currency:
+        type: string
+        description: default currency of workspace
+        enum:
+          - EUR
+          - USD
+          - JPY
+          - ...
+        default: EUR
+      customerUniquenessPolicy:
+        type: string
+        enum:
+        - NO_CHECK
+        - BLOCK
+        - MERGE
+        description: the customer uniqueness check policy (NO_CHECK, BLOCK, MERGE)
+        default: MERGE
+      tier:
+        type: integer
+        description: the amount of purchased tier
+        default: null
+        readOnly: true
+  User:
+    allOf:
+      - $ref: '#/definitions/PutUser'
+      - type: object
+        properties:
+          id:
+            type: string
+            description: unique identifier of user
+          name:
+            type: string
+            description: the user name
+          registeredAt:
+            type: string
+            format: date-time
+            description: the creation timestamp
+          updatedAt:
+            type: string
+            format: date-time
+            description: the user update timestamp
+
+  # customers
+  Customer:
+    allOf:
+      - $ref: '#/definitions/PostCustomer'
+      - type: object
+        properties:
+          id:
+            type: string
+            description: the customer id
+          sourceInfo:
+            type: object
+            description: information about sources that operated on customer
+            properties:
+              registeredBy:
+                type: string
+                description: identifier of the source that created the customer
+              updatedBy:
+                type: string
+                description: identifier of the last source that updated the customer
+          registeredAt:
+            type: string
+            format: date-time
+            description: the registration timestamp
+          updatedAt:
+            type: string
+            format: date-time
+            description: the customer update timestamp
+  Education:
+    type: object
+    properties:
+      id:
+        type: string
+        description: unique identifier of education
+      schoolType:
+        description: The name of school type
+        type: string
+        enum:
+          - PRIMARY_SCHOOL
+          - SECONDARY_SCHOOL
+          - HIGH_SCHOOL
+          - COLLEGE
+          - OTHER
+      schoolName:
+        type: string
+        description: the name of the school
+      schoolConcentration:
+        type: string
+      startYear:
+        type: integer
+      endYear:
+        type: integer
+      isCurrent:
+        type: boolean
+  Job:
+    type: object
+    properties:
+      id:
+        type: string
+        description: unique identifier of job
+      companyIndustry:
+        description: The name of company industry
+        type: string
+      companyName:
+        description: The name of company
+        type: string
+      jobTitle:
+        description: The job title
+        type: string
+      startDate:
+        description: job start date
+        type: string
+        format: date
+      endDate:
+        description: job end date
+        type: string
+        format: date
+      isCurrent:
+        type: boolean
+  Like:
+    type: object
+    properties:
+      id:
+        type: string
+        description: unique identifier of like
+      category:
+        description: The name of like category
+        type: string
+      name:
+        type: string
+        description: the name of like
+      createdTime:
+        type: string
+        format: date-time
+        description: the like creation datetime
+  PagedCustomer:
+    type: object
+    properties:
+      elements:
+        description: the list of customer
+        type: array
+        items:
+          $ref: '#/definitions/Customer'
+      page:
+        $ref: '#/definitions/Page'
+  PatchCustomer:
+    type: object
+    properties:
+      externalId:
+        type: string
+        description: the external id of customer
+      base:
+        type: object
+        description: >-
+          base customer data structure included in Contacthub. The model is defined <a href="/documentation/contacthub/schemas/index" target="_blank">[here]</a>
+      consents:
+        type: object
+        description:
+          consents customer data structure included in Contacthub. The model is defined <a href="/documentation/contacthub/schemas/index" target="_blank">[here]</a>
+      extended:
+        type: object
+        description: custom data defined by workspace based on a declarated schema
+      extra:
+        type: string
+        description: custom data defined by workspace not based on a declarated schema
+      tags:
+        description: the default tags property of customers
+        type: object
+        properties:
+          auto:
+            type: array
+            items:
+              type: string
+          manual:
+            type: array
+            items:
+              type: string
+      enabled:
+        type: boolean
+        description: flag for soft delete
+  PostCustomer:
+    type: object
+    properties:
+      externalId:
+        type: string
+        description: the external id of customer
+      nodeId:
+        type: string
+        description: entry node `id`
+      base:
+        type: object
+        description: >-
+          base customer data structure included in Contacthub. The model is defined <a href="/documentation/contacthub/schemas/index" target="_blank">[here]</a>
+      consents:
+        type: object
+        description:
+          consents customer data structure included in Contacthub. The model is defined <a href="/documentation/contacthub/schemas/index" target="_blank">[here]</a>
+      extended:
+        type: object
+        description: custom data defined by workspace based on a declarated schema
+      extra:
+        type: string
+        description: custom data defined by workspace not based on a declarated schema
+      tags:
+        description: the default tags property of customers
+        type: object
+        properties:
+          auto:
+            type: array
+            items:
+              type: string
+          manual:
+            type: array
+            items:
+              type: string
+      enabled:
+        type: boolean
+        description: flag for soft delete
+    required: [ nodeId ]
+  PutCustomer:
+    allOf:
+      - $ref: '#/definitions/PostCustomer'
+      - type: object
+        properties:
+          id:
+            type: string
+            description: the customer id
+          sourceInfo:
+            type: object
+            description: information about sources that operated on customer
+            properties:
+              registeredBy:
+                type: string
+                description: identifier of the source that created the customer
+              updatedBy:
+                type: string
+                description: identifier of the last source that updated the customer
+          registeredAt:
+            type: string
+            format: date-time
+            description: the registration timestamp
+          updatedAt:
+            type: string
+            format: date-time
+            description: the customer update timestamp
+  Session:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of session
+        value:
+          type: string
+          description: the session id of customer. the value is unique for a single node
+  SourceCustomer:
+    type: object
+    properties:
+      id:
+        type: string
+        description: the source id
+      externalId:
+        type: string
+        description: the external id of customer
+      nodeId:
+        type: string
+        description: entry node `id`
+      base:
+        type: object
+        description: >-
+          properties predefined in contacthub in base to the model retrived in
+          /models/properties/base
+      extended:
+        type: object
+        description: custom data defined by workspace based on a declarated schema
+      extra:
+        type: string
+        description: custom data defined by workspace not based on a declarated schema
+      consents:
+        type: object
+        description:
+          consents customer data structure included in Contacthub. The model is defined <a href="/documentation/contacthub/schemas/index" target="_blank">[here]</a>
+      tags:
+        description: the default tags property of customers
+        type: object
+        properties:
+          auto:
+            type: array
+            items:
+              type: string
+          manual:
+            type: array
+            items:
+              type: string
+      registeredAt:
+        type: string
+        format: date-time
+        description: the source customer registration timestamp
+      updatedAt:
+        type: string
+        format: date-time
+        description: the source customer update timestamp
+      enabled:
+        type: boolean
+        description: flag for soft delete
+  Subscription:
+    type: object
+    properties:
+      id:
+        type: string
+        description: unique identifier of subscription
+      name:
+        description: The name of subscription
+        type: string
+      type:
+        description: The type of subscription
+        type: string
+      kind:
+        description: The kind of subscription
+        type: string
+        enum:
+          - DIGITAL_MESSAGE
+          - SERVICE
+          - OTHER
+      enable:
+        type: boolean
+      startDate:
+        description: start date of subscription
+        type: string
+        format: date-time
+      endDate:
+        description: end date of subscription
+        type: string
+        format: date-time
+      subscriberId:
+        description: unique identifier of subscriber
+        type: string
+      registeredAt:
+        description: subscription creation datetime
+        type: string
+        format: date-time
+      updatedAt:
+        description: subscription update datetime
+        type: string
+        format: date-time
+      preferences:
+        type: array
+        items:
+          type: object
+          properties:
+            key:
+              type: string
+            value:
+              type: string
+
+  # events
+  BringBackProperty:
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - SESSION_ID
+          - EXTERNAL_ID
+        default: SESSION_ID
+        description: type of bring back
+      value:
+        type: string
+        description: value of bring back
+      nodeId:
+        type: string
+        description: id of entry node
+  Event:
+    allOf:
+      - $ref: '#/definitions/PostEvent'
+      - type: object
+        properties:
+          id:
+            type: string
+            description: Unique identifier of event
+  PostEvent:
+    type: object
+    properties:
+      customerId:
+        type: string
+        description: customer id
+      bringBackProperties:
+        $ref: '#/definitions/BringBackProperty'
+      type:
+        $ref: '#/definitions/EventType'
+      context:
+        $ref: '#/definitions/EventContext'
+      date:
+        type: string
+        format: date-time
+        description: the timestamp of event
+      contextInfo:
+        type: object
+        description: the json schema related to event context. <a href="/documentation/contacthub/schemas/index" target="_blank">[Read here]</a>
+      tracking:
+        $ref: '#/definitions/Tracking'
+      properties:
+        type: object
+        description: the json schema related to event type. <a href="/documentation/contacthub/schemas/index" target="_blank">[Read here]</a>
+    required: [type,context,properties]
+  PostResponseEvent:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique identifier of event
+  PutEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of event
+        customerId:
+          type: string
+          description: customer id
+        bringBackProperties:
+          $ref: '#/definitions/BringBackProperty'
+        type:
+          $ref: '#/definitions/EventType'
+        context:
+          $ref: '#/definitions/EventContext'
+        date:
+          type: string
+          format: date-time
+          description: the timestamp of event
+        contextInfo:
+          type: object
+          description: the json schema related to event context. <a href="/documentation/contacthub/schemas/index" target="_blank">[Read here]</a>
+        tracking:
+          $ref: '#/definitions/Tracking'
+        registeredAt:
+          type: string
+          format: date-time
+          description: the creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: the update timestamp
+        properties:
+          type: object
+          description: the json schema related to event type. <a href="/documentation/contacthub/schemas/index" target="_blank">[Read here]</a>
+      required: [id,type,context,registeredAt,updatedAt,properties]
+  PagedEvent:
+    type: object
+    properties:
+      elements:
+        description: the list of events
+        type: array
+        items:
+          $ref: '#/definitions/Event'
+      page:
+        $ref: '#/definitions/Page'
+  Tracking:
+    type: object
+    properties:
+      ga:
+        type: object
+        description: Tracking with Google Analytics parameters
+        properties:
+          utm_source:
+            type: string
+            description: Parameter to identify the source of your traffic such as search engine, newsletter, or other referral
+          utm_medium:
+            type: string
+            description: Parameter to identify the medium the link was used upon such as email, CPC, or other method of sharing
+          utm_term:
+            type: string
+            description: Parameter suggested for paid search to identify keywords for your ad
+          utm_content:
+            type: string
+            description: Parameter for additional details for A/B testing and content-targeted ads
+          utm_campaign:
+            type: string
+            description: Parameter to identify a specific product promotion or strategic campaign such as a spring sale or other
+
+  # models
+  BasePropertyModel:
+    type: object
+    properties:
+      schema:
+        type: string
+        description: >-
+          the json schema of base property (including for every elements the
+          contactlabProperties object with property `label`, `enabled`.
+  Context:
+    type: object
+    properties:
+      id:
+        type: string
+        description: >-
+          id of context that you must use in `context` property when define an
+          event
+      label:
+        type: string
+        description: the label of context
+      description:
+        type: string
+        description: description of context
+      propertiesSchema:
+        type: string
+        description: json schema of properties for the context
+  MergePolicy:
+    type: object
+    properties:
+      id:
+        type: string
+        description: id of merge policy that you must use in `mergePolicy` property
+      description:
+        type: string
+        description: description of merge policy behavior
+      supportedTypes:
+        type: array
+        items:
+          type: string
+        description: Supported json schema types
+  Provider:
+    type: object
+    properties:
+      id:
+        type: string
+        description: >-
+          id of provider that you must use in `type` property when define a
+          source
+      description:
+        type: string
+        description: description of provider
+      propertiesSchema:
+        type: string
+        description: json schema of properties necessary when define a source
+
+  # segments
+  PagedSegment:
+    type: object
+    properties:
+      elements:
+        description: the list of segments
+        type: array
+        items:
+          $ref: '#/definitions/Segment'
+      page:
+        $ref: '#/definitions/Page'
+  PostSegment:
+    type: object
+    properties:
+      name:
+        type: string
+        description: name of segment
+      query:
+        type: object
+        description: object query
+      enabled:
+        type: boolean
+        default: true
+        description: enable/disable segment
+  PutSegment:
+    allOf:
+      - $ref: '#/definitions/PostSegment'
+      - type: object
+        properties:
+          id:
+            type: string
+            description: id of segment
+  Segment:
+    allOf:
+      - $ref: '#/definitions/PutSegment'
+      - type: object
+        properties:
+          createdAt:
+            type: string
+            format: date-time
+            description: timestamp of segment creation
+          updatedAt:
+            type: string
+            format: date-time
+            description: timestamp of segment update
+
+  # updates
+  LastOffsetResponse:
+    description: the last offset of the requested stream of updates
+    type: object
+    additionalProperties: false
+    properties:
+      lastOffset:
+        type: integer
+  Update:
+    description: the update of a customer or event
+    type: object
+    additionalProperties: false
+    properties:
+      operation:
+        description: the type of the operation performed on this entity
+        type: string
+        enum:
+          - CREATE
+          - UPDATE
+          - DELETE
+      entity:
+        description: the entity on which the operation has been performed
+        type: object
+        additionalProperties: false
+        properties:
+          type:
+            description: the type of the entity
+            type: string
+            enum:
+              - CUSTOMER
+              - EVENT
+          data:
+            description: the entity involved in the operation
+            type: object
+  UpdatesResponse:
+    description: the result of a call to the updates api
+    type: object
+    additionalProperties: false
+    properties:
+      nextOffset:
+        type: integer
+      updates:
+        description: A list of updates
+        type: array
+        items:
+          $ref: '#/definitions/Update'
+
+  # user
+  GroupInfo:
+    type: object
+    properties:
+      id:
+        type: string
+        description: unique identifier of group
+      name:
+        type: string
+        description: name of group
+      workspaces:
+        type: array
+        items:
+          $ref: '#/definitions/WorkspaceInfo'
+  UserInfo:
+    type: object
+    properties:
+      id:
+        type: string
+        description: unique identifier of user
+      name:
+        type: string
+        description: name of user
+      surname:
+        type: string
+        description: surname of user
+      groups:
+        type: array
+        items:
+          $ref: '#/definitions/GroupInfo'
+  WorkspaceInfo:
+    type: object
+    properties:
+      id:
+        type: string
+        description: unique identifier of workspace
+      name:
+        type: string
+        description: name of workspace
+      nodes:
+        type: array
+        items:
+          $ref: '#/definitions/NodePermission'
+
+parameters:
+
+  eventContext:
+    name: context
+    description: The name of event context
+    in: query
+    type: string
+    enum:
+      - WEB
+      - MOBILE
+      - ECOMMERCE
+      - RETAIL
+      - SOCIAL
+      - DIGITAL_CAMPAIGN
+      - CONTACT_CENTER
+      - IOT
+      - OTHER
+
+  workspaceId:
+    name: workspaceId
+    in: path
+    description: The unique identifier of workspace
+    type: string
+    required: true
+
+  entity:
+    name: entity
+    description: Filter the entities by type
+    in: query
+    type: string
+    enum:
+      - CUSTOMER
+      - EVENT
+    required: false
+
+  nodeId:
+    name: nodeId
+    description: Filter the entities belonging to this node id
+    in: query
+    type: string
+    required: false
+
+  offset:
+    name: offset
+    description: The greatest offset known by the client (not included in the returned result)
+    in: query
+    type: integer
+    required: false
+
+  size:
+    name: size
+    in: query
+    description: 'Paging: the page size'
+    type: integer
+    default: 20
+    minimum: 0
+    maximum: 50
+    required: false
+
+  timestamp:
+    name: timestamp
+    in: query
+    description: The timestamp of the first modified entity; ignored if the `offset` parameter has been defined
+    type: integer
+    required: false

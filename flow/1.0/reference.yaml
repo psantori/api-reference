@@ -1,0 +1,1768 @@
+swagger: '2.0'
+info:
+  title: Contactflow API
+  description: Contactflow API
+  version: 1.0.1
+schemes:
+  - https
+host: api.contactlab.it
+basePath: /flow/v1
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  OAuth2:
+    description: |
+      The following table provides brief descriptions of the built-in OAuth2 scopes of this API.
+      In this context, scopes are generally intended as application roles.
+    type: oauth2
+    flow: implicit
+    authorizationUrl: 'https://login.contactlab.it/o/oauth2/auth'
+    scopes:
+      CONFIGURATOR: Customer Care Representative
+      PLATFORM_INTEGRATION: Contactlab Application
+      CLAB_OPERATOR: Contactlab Admin
+      ADMIN: Admin
+      USER: User
+      GUEST: Guest
+paths:
+  '/me':
+    get:
+      tags:
+        - User
+      summary: Get current user info
+      description: Returns basic informations about the current user and a list of nodes on which it can operate
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/UserInfo'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+
+  '/nodes':
+    get:
+      tags:
+        - Nodes
+      summary: Get all nodes
+      description: Returns all available nodes for the current user 
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - name: groupPk
+          in: query
+          description: Filter nodes by SEND GroupPk
+          required: false
+          type: integer
+        - name: userdbId
+          in: query
+          description: Filter nodes by SEND UserDbId
+          required: false
+          type: integer
+      security:
+        - OAuth2:
+          - PLATFORM_INTEGRATION
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PageableNodeList'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+    post:
+      tags:
+        - Nodes
+      summary: Create a node
+      description: Handles node provisioning
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - name: node
+          in: body
+          description: The node resource
+          required: true
+          schema:
+            $ref: '#/definitions/Node'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+      responses:
+        '201':
+          description: The node was successfully provisioned
+          schema:
+            $ref: '#/definitions/Node'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '409':
+          $ref: '#/responses/Conflict'
+  '/nodes/{nodeUuid}':
+    get:
+      tags:
+        - Nodes
+      summary: Get a node
+      description: Returns the node with the given UUID
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeUuidPathVariable'
+      security:
+        - OAuth2:
+          - PLATFORM_INTEGRATION
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Node'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+    delete:
+      tags:
+        - Nodes
+      summary: Delete a node
+      description: Deletes the node with the given UUID
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeUuidPathVariable'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+      responses:
+        '204':
+          $ref: '#/responses/NoContent'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+    patch:
+      tags:
+        - Nodes
+      summary: Update a node
+      description: | 
+        Enables or disables a node by setting its active property. 
+        A disabled node is in a "logical deletion" status, which means it is not operational, nor usable or visible.
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeUuidPathVariable'
+        - name: active
+          in: body
+          description: The active property of the node resource
+          required: true
+          schema:  
+            type: object
+            properties: 
+              active:
+                type: boolean
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Node'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+          
+  '/settings':
+    get:
+      tags:
+        - Node Settings
+      summary: Get all settings
+      description: Returns all settings for the specified node
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - name: Category
+          in: query
+          description: Filter by category
+          required: false
+          type: string
+          enum:
+            - INTEGRATION
+        - name: Type
+          in: query
+          description: Filter by type
+          required: false
+          type: string
+          enum:
+            - CLAB_API_SOAP
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/GroupedSettings'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+    post:
+      tags:
+        - Node Settings
+      summary: Add a setting
+      description: Adds a setting to the specified node
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - name: setting
+          in: body
+          description: The setting to add
+          required: true
+          schema:
+            $ref: '#/definitions/Setting'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/Setting'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+  '/settings/{settingUuid}':
+    get:
+      tags:
+        - Node Settings
+      summary: Get a setting
+      description: Returns the setting with the specified UUID
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/SettingUuidPathVariable'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Setting'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+    put:
+      tags:
+        - Node Settings
+      summary: Update a setting
+      description: Updates the setting with the specified UUID
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/SettingUuidPathVariable'
+        - name: setting
+          in: body
+          description: The setting resource
+          required: true
+          schema:
+            $ref: '#/definitions/Setting'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/Setting'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+    delete:
+      tags:
+        - Node Settings
+      summary: Delete a setting
+      description: Deletes the setting with the specified UUID
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/SettingUuidPathVariable'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+      responses:
+        '204':
+          $ref: '#/responses/NoContent'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+
+  '/automations':
+    get:
+      tags:
+        - Automations
+      summary: Get all automations
+      description: Returns all available automations
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - name: name
+          in: query
+          description: Filter by name
+          required: false
+          type: string
+        - name: description
+          in: query
+          description: Filter by description
+          required: false
+          type: string
+        - name: status
+          in: query
+          description: Filter by one or more statuses
+          required: false
+          type: array
+          collectionFormat: multi
+          items:
+            type: string
+            enum:
+              - COMMITTED
+              - PAUSED
+              - RUNNING
+              - ARCHIVED
+              - DRAFT
+              - ERROR
+        - name: category
+          in: query
+          description: Filter by one or more categories
+          required: false
+          type: array
+          collectionFormat: multi
+          items:
+            type: string
+            enum:
+              - Custom
+        - name: startDateBefore
+          in: query
+          description: Filter by automation startDate before or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: startDateAfter
+          in: query
+          description: Filter by automation start date after or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: endDateBefore
+          in: query
+          description: Filter by automation end date before or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: endDateAfter
+          in: query
+          description: Filter by automation end date after or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: createdBefore
+          in: query
+          description: Filter by automation creation date before or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: createdAfter
+          in: query
+          description: Filter by automation creation date after or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: statistics
+          in: query
+          description: Add automation statistics
+          required: false
+          type: boolean
+          default: false
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - PLATFORM_INTEGRATION
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PageableAutomationList'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+    post:
+      tags:
+        - Automations
+      summary: Create an automation
+      description: Creates an automation
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - name: automation
+          in: body
+          description: The automation resource
+          required: true
+          schema:
+            $ref: '#/definitions/Automation'
+      security:
+        - OAuth2:
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/Automation'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '409':
+          $ref: '#/responses/Conflict'
+        '422':
+          $ref: '#/responses/UnprocessableEntity'
+  '/automations/{automationUuid}':
+    get:
+      tags:
+        - Automations
+      summary: Get an automation
+      description: Returns the automation with the given UUID
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/AutomationUuidPathVariable'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - PLATFORM_INTEGRATION
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Automation'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+    put:
+      tags:
+        - Automations
+      summary: Update an automation
+      description: Updates the automation with the given UUID
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/AutomationUuidPathVariable'
+        - name: automation
+          in: body
+          description: The automation resource
+          required: true
+          schema:
+            $ref: '#/definitions/Automation'
+      security:
+        - OAuth2:
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/Automation'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '422':
+          $ref: '#/responses/UnprocessableEntity'
+    delete:
+      tags:
+        - Automations
+      summary: Delete an automation
+      description: Deletes the automation with the given UUID
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/AutomationUuidPathVariable'
+      security:
+        - OAuth2:
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+      responses:
+        '204':
+          $ref: '#/responses/NoContent'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+  '/automations/{automationUuid}/feedbacks':
+    get:
+      tags:
+        - Automations
+      summary: Get feedbacks for an automation
+      description: Returns the feedbacks for the automation with the given UUID
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/AutomationUuidPathVariable'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AutomationFeedbacks'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+  '/automations/reports/automations.csv':
+    post:
+      tags:
+        - Automations
+      summary: Get reports for all Automations
+      description: Returns reports for all Automations in a CSV file
+      produces:
+        - application/csv
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - name: name
+          in: query
+          description: Filter by automation name
+          required: false
+          type: string
+        - name: description
+          in: query
+          description: Filter by automation description
+          required: false
+          type: string
+        - name: status
+          in: query
+          description: Filter by one or more status
+          required: false
+          type: array
+          collectionFormat: multi
+          items:
+            type: string
+            enum:
+              - COMMITTED
+              - PAUSED
+              - RUNNING
+              - ARCHIVED
+              - DRAFT
+              - ERROR
+        - name: category
+          in: query
+          description: Filter by one or more categories
+          required: false
+          type: array
+          collectionFormat: multi
+          items:
+            type: string
+            enum:
+              - Custom
+        - name: startDateBefore
+          in: query
+          description: Filter by automation startDate before or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: startDateAfter
+          in: query
+          description: Filter by automation start date after or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: endDateBefore
+          in: query
+          description: Filter by automation end date before or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: endDateAfter
+          in: query
+          description: Filter by automation end date after or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: createdBefore
+          in: query
+          description: Filter by automation creation date before or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: createdAfter
+          in: query
+          description: Filter by automation creation date after or equal to the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: filename
+          in: query
+          description: filename
+          required: false
+          type: string
+          default: feedbacks
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+  '/automations/categories':
+    get:
+      tags:
+        - Automations
+      summary: Get automation categories
+      description: Returns all available automation categories
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              categories:
+                type: array
+                items:
+                  $ref: '#/definitions/AutomationCategory'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+            
+  '/automations/{automationUuid}/customers':
+    get:
+      tags:
+        - Customers
+      summary: Get all customers inside an automation
+      description: Returns all customers which are currently inside the specified automation
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/AutomationUuidPathVariable'
+        - $ref: '#/parameters/SourceUuidQueryParam'
+        - $ref: '#/parameters/UserPkQueryParam'
+        - $ref: '#/parameters/ClabUuidQueryParam'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PageableCustomerList'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+    post:
+      tags:
+        - Customers
+      summary: Add a customer to an automation
+      description: Adds a customer to the specified automation
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/AutomationUuidPathVariable'
+        - name: customer
+          in: body
+          description: The customer to add
+          required: true
+          schema:
+            $ref: '#/definitions/SingleCustomer'
+      security:
+        - OAuth2:
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/SingleCustomer'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+  '/automations/{automationUuid}/customers/{customerUuid}':
+    get:
+      tags:
+        - Customers
+      summary: Get a customer from an automation
+      description: Returns the customer with the given UUID
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/AutomationUuidPathVariable'
+        - $ref: '#/parameters/CustomerUuidPathVariable'
+      security:
+        - OAuth2:
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Customer'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+    delete:
+      tags:
+        - Customers
+      summary: Delete a customer from an automation
+      description: Deletes the customer with the given UUID from the specified automation
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/AutomationUuidPathVariable'
+        - $ref: '#/parameters/CustomerUuidPathVariable'
+      security:
+        - OAuth2:
+          - CLAB_OPERATOR
+          - ADMIN
+      responses:
+        '204':
+          $ref: '#/responses/NoContent'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+  '/automations/{automationUuid}/customers-batch':
+    post:
+      tags:
+        - Customers
+      summary: Add a batch of customers to an automation
+      description: Adds a batch of customers to the specified automation
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/AutomationUuidPathVariable'
+        - name: customers
+          in: body
+          description: The list of customers to add to the automation
+          required: true
+          schema:
+            $ref: '#/definitions/CustomersBatch'
+      security:
+        - OAuth2:
+          - PLATFORM_INTEGRATION
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/CustomersBatchStatus'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '422':
+          $ref: '#/responses/UnprocessableEntity'
+    delete:
+      tags:
+        - Customers
+      summary: Delete an incomplete batch of customers from an automation
+      description: |
+        Deletes all customers belonging to an open batch source (by specifying
+        sourceUuid parameter)
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/AutomationUuidPathVariable'
+        - $ref: '#/parameters/RequiredSourceUuidQueryParam'
+      security:
+        - OAuth2:
+          - PLATFORM_INTEGRATION
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+      responses:
+        '204':
+          $ref: '#/responses/NoContent'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '422':
+          $ref: '#/responses/UnprocessableEntity'
+  '/customers':
+    get:
+      tags:
+        - Customers
+      summary: Search a customer in all automations
+      description: Retrieves a customer from all automations by userPk or clabUuid
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - $ref: '#/parameters/ClabUuidQueryParam'
+        - $ref: '#/parameters/UserPkQueryParam'
+      security:
+        - OAuth2:
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PageableCustomerExtendedList'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+          
+  '/extContents/messagemodels':
+    get:
+      tags:
+        - External Contents
+      summary: Get all message models
+      description: Returns all available message models (i.e. SEND Mail Groups) for the specified node
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            properties:
+              messageModels:
+                type: array
+                items:
+                  $ref: '#/definitions/MessageModel'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+  '/extContents/pagebuilderTemplates':
+    get:
+      tags:
+        - External Contents
+      summary: Get PageBuilder templates
+      description: Returns all available PageBuilder templates for the specified node
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PageablePagebuilderTemplateList'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+  '/extContents/pagebuilderTemplates/{templateId}/pages':
+    get:
+      tags:
+        - External Contents
+      summary: Get all PageBuilder template's pages
+      description: Returns all pages of a PageBuilder template
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - name: templateId
+          in: path
+          description: Template ID
+          required: true
+          type: integer
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PageablePagebuilderTemplatePageList'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+  '/extContents/pagebuilderTemplates/{templateId}/pages/{pageId}':
+    get:
+      tags:
+        - External Contents
+      summary: Get a PageBuilder template's page
+      description: Returns a specific page of a given PageBuilder template
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - $ref: '#/parameters/NodeHeader'
+        - name: templateId
+          in: path
+          description: Template ID
+          required: true
+          type: integer
+        - name: pageId
+          in: path
+          description: Page ID
+          required: true
+          type: integer
+      security:
+        - OAuth2:
+          - CONFIGURATOR
+          - CLAB_OPERATOR
+          - ADMIN
+          - USER
+          - GUEST
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagebuilderTemplatePage'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+  
+  '/kpis':
+    get:
+      tags:
+        - KPIs
+      summary: Show available kpis
+      description: Returns a list of all available kpis
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+      security:
+        - OAuth2:
+          - CLAB_OPERATOR
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/KpiList'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+  '/kpis/nodes':
+    get:
+      tags:
+        - KPIs
+      summary: Get nodes basic infos and automations status aggregate
+      description: Returns all nodes basic infos and the related automations status aggregate
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+      security:
+        - OAuth2:
+          - CLAB_OPERATOR
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PageableNodeAutomationsStatusAggregate'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+  '/kpis/nodes/usage':
+    get:
+      tags:
+        - KPIs
+      summary: Get all nodes basic infos and automations statistics
+      description: Returns all nodes basic infos and the related automations statistics (filterable by timeframe)
+      parameters:
+        - $ref: '#/parameters/AuthorizationHeader'
+        - name: from
+          in: query
+          description: Filter automations created after the specified date
+          required: false
+          type: string
+          format: date-time
+        - name: to
+          in: query
+          description: Filter automations created before the specified date
+          required: false
+          type: string
+          format: date-time
+      security:
+        - OAuth2:
+          - CLAB_OPERATOR
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PageableNodeAutomationsKpiAggregate'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+
+responses:
+  NoContent:
+    description: The resource was deleted succesfully
+  BadRequest:
+    description: The request was malformed or some attributes were missing
+    schema:
+      $ref: '#/definitions/Error'
+  Unauthorized:
+    description: Unauthorized (Missing or invalid authorization token)
+    schema:
+      $ref: '#/definitions/Error'
+  Forbidden:
+    description: Forbidden
+    schema:
+      $ref: '#/definitions/Error'
+  NotFound:
+    description: The requested resource does not exist
+    schema:
+      $ref: '#/definitions/Error'
+  Conflict:
+    description: A resource with the same identifier already exists
+    schema:
+      $ref: '#/definitions/Error'
+  UnprocessableEntity:
+    description: The requested operation is not allowed while the resource is in the current status
+    schema:
+      $ref: '#/definitions/Error'
+
+parameters:
+  AuthorizationHeader:
+    name: Authorization
+    in: header
+    description: A valid OAuth2 token
+    required: true
+    type: string
+  NodeHeader:
+    name: Node
+    in: header
+    description: The UUID of the node to operate on
+    required: true
+    type: string
+    format: uuid
+  NodeUuidPathVariable:
+    name: nodeUuid
+    in: path
+    description: The UUID of the node
+    required: true
+    type: string
+    format: uuid
+  AutomationUuidPathVariable:
+    name: automationUuid
+    in: path
+    description: The UUID of the automation
+    required: true
+    type: string
+    format: uuid
+  CustomerUuidPathVariable:
+    name: customerUuid
+    in: path
+    description: The UUID of the customer
+    required: true
+    type: string
+    format: uuid
+  SettingUuidPathVariable:
+    name: settingUuid
+    in: path
+    description: The UUID of the setting
+    required: true
+    type: string
+    format: uuid
+  SourceUuidQueryParam:
+    name: sourceUuid
+    in: query
+    description: The UUID of the source
+    required: false
+    type: string
+  RequiredSourceUuidQueryParam:
+    name: sourceUuid
+    in: query
+    description: The UUID of the source
+    required: true
+    type: string
+  ClabUuidQueryParam:
+    name: clabUuid
+    in: query
+    description: UUID of the customer
+    required: false
+    type: string
+  UserPkQueryParam:
+    name: userPk
+    in: query
+    description: SEND UserPK
+    required: false
+    type: string
+
+definitions:
+  User:
+    type: object
+    properties:
+      userPk:
+        type: integer
+      name:
+        type: string
+      surname:
+        type: string
+      username:
+        type: string
+      email:
+        type: string
+      lang:
+        type: string
+      timezone:
+        type: string
+      picture:
+        type: string
+      roles:
+        type: array
+        items:
+          type: string
+          enum:
+            - CONFIGURATOR
+            - CLAB_OPERATOR
+            - ADMIN
+            - USER
+            - GUEST
+  UserInfo:
+    type: object
+    properties:
+      base:
+        $ref: '#/definitions/User'
+      extended:
+        type: object
+        properties:
+          nodes:
+            type: array
+            items:
+              $ref: '#/definitions/Node'
+  Node:
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      name:
+        type: string
+      workspaceUuid:
+        type: string
+      workspaceName:
+        type: string
+      groupPk:
+        type: integer
+      groupName:
+        type: string
+      userdbId:
+        type: integer
+      active:
+        type: boolean
+      created:
+        type: string
+        format: date-time
+  Setting:
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      label:
+        type: string
+      category:
+        type: string
+        enum:
+          - INTEGRATION
+      type:
+        type: string
+        enum:
+          - CLAB_API_SOAP
+      value:
+        type: object
+  GroupedSettings:
+    type: object
+    properties:
+      integrations:
+        type: array
+        items:
+          $ref: '#/definitions/Setting'
+  Automation:
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      name:
+        type: string
+      category:
+        $ref: '#/definitions/AutomationCategory'
+      author:
+        type: string
+      startDate:
+        type: string
+        format: date-time
+      timezone:
+        type: string
+      status:
+        $ref: '#/definitions/AutomationStatus'
+      created:
+        type: string
+        format: date-time
+      createdBy:
+        type: string
+      description:
+        type: string
+      endDate:
+        type: string
+        format: date-time
+      firstStep:
+        $ref: '#/definitions/Step'
+      statistics:
+        $ref: '#/definitions/AutomationStatistics'
+  AutomationStatus:
+    type: string
+    enum:
+     - COMMITTED
+     - PAUSED
+     - RUNNING
+     - ARCHIVED
+     - DRAFT
+     - ERROR
+  AutomationCategory:
+    type: string
+    enum:
+      - Custom
+  Step:
+    type: object
+    properties:
+      uuid:
+        type: string
+      description:
+        type: string
+      type:
+        $ref: '#/definitions/StepType'
+      operation:
+        $ref: '#/definitions/StepOperation'
+      properties:
+        type: object
+      positiveStep:
+        $ref: '#/definitions/Step'
+      negativeStep:
+        $ref: '#/definitions/Step'
+      sources:
+        type: array
+        items:
+          $ref: '#/definitions/Source'
+      statistics:
+        $ref: '#/definitions/Statistics'
+  StepType:
+    type: string
+    enum: 
+      - ACTION
+      - DELAY
+      - CHECK
+      - END
+  StepOperation:
+    type: string
+    enum: 
+      - CLAB_CAMPAIGN
+      - FROM_LAST_STEP
+      - WAIT_AND_CHECK
+      - WAIT_FOR_TRIGGER
+      - NO_ACTION
+  Source:
+    type: object
+    properties:
+      uuid:
+        type: string
+      label:
+        type: string
+      statistics:
+        $ref: '#/definitions/Statistics'
+  Statistics:
+    type: object
+    properties:
+      completedCustomers:
+        type: integer
+      errorCustomers:
+        type: integer
+      excludedCustomers:
+        type: integer
+      removedCustomers:
+        type: integer
+      runningCustomers:
+        type: integer
+      totalCustomers:
+        type: integer
+  AutomationStatistics:
+    allOf:
+      - $ref: '#/definitions/Statistics'
+      - type: object
+        properties:
+          queuedCustomers:
+            type: integer
+  AutomationFeedbacks:
+    type: object
+    properties:
+      automationUuid:
+        type: string
+      steps:
+        type: array
+        items:
+          $ref: '#/definitions/StepFeedbacks'
+  StepFeedbacks:
+    type: object
+    properties:
+      uuid:
+        type: string
+      type:
+        $ref: '#/definitions/StepType'
+      operation:
+        $ref: '#/definitions/StepOperation'
+      description:
+        type: string
+      feedbacks:
+        $ref: '#/definitions/StepFeedbacksDetail'
+  StepFeedbacksDetail:
+    type: object
+    properties:
+      bounce:
+        type: integer
+      delivered:
+        type: integer
+      deliveryId:
+        type: integer
+      deliveryName:
+        type: string
+      filterId:
+        type: integer
+      removeDuplicates:
+        type: boolean
+      sent:
+        type: integer
+      subject:
+        type: string
+      totalClicks:
+        type: integer
+      totalViews:
+        type: integer
+      uniqueClicks:
+        type: integer
+      uniqueViews:
+        type: integer
+  Customer:
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      userPk:
+        type: string
+      clabUuid:
+        type: string
+        format: uuid
+      attributes:
+        type: object
+      automationUuid:
+        type: string
+        format: uuid
+      automationName:
+        type: string
+  CustomerExtended:
+    allOf:
+      - $ref: '#/definitions/Customer'
+      - type: object
+        properties:
+          automationUuid:
+            type: string
+            format: uuid
+          automationName:
+            type: string
+  SingleCustomer:
+    type: object
+    properties:
+      customer:
+        $ref: '#/definitions/Customer'
+      sourceLabel:
+        type: string
+      sourceUuid:
+        type: string
+        format: uuid
+  CustomerOfBatch:
+    type: object
+    properties:
+      attributes:
+        type: object
+  CustomersBatch:
+    allOf:
+      - type: object
+        properties:
+          customers:
+            type: array
+            items:
+              $ref: '#/definitions/CustomerOfBatch'
+          notification:
+            $ref: '#/definitions/BatchNotification'
+          packet:
+            type: string
+            enum:
+              - FIRST
+              - MIDDLE
+              - LAST
+      - $ref: '#/definitions/CustomersBatchStatus'
+  CustomersBatchStatus:
+    type: object
+    properties:
+      sourceLabel:
+        type: string
+      sourceUuid:
+        type: string
+        format: uuid
+      status:
+        type: string
+        enum:
+          - OPEN
+          - CLOSED
+          - ENABLED
+          - ENABLED_OK_NOTIFYING
+          - ENABLED_ERROR_NOTIFYING
+          - ENABLED_OK_NOTIFIED
+          - ENABLED_OK_NOT_NOTIFIED
+          - ENABLED_ERROR_NOTIFIED
+          - ENABLED_ERROR_NOT_NOTIFIED
+  BatchNotification:
+    type: object
+    properties:
+      customKey:
+        type: string
+      webhook:
+        type: string
+  MessageModel:
+    type: object
+    properties:
+      identifier:
+        type: integer
+      name:
+        type: string
+      description:
+        type: string
+      senderEmail:
+        type: string
+      senderName:
+        type: string
+      senderReplyTo:
+        type: string
+      subject:
+        type: string
+      htmlContent:
+        type: string
+      textContent:
+        type: string
+      charset:
+        type: string
+  PagebuilderTemplate:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+  PagebuilderTemplatePage:
+    type: object
+    properties:
+      id:
+        type: integer
+      templateId:
+        type: integer
+      name:
+        type: string
+      pageContent:
+        type: string
+  KpiList:
+    type: object
+    properties:
+      kpis:
+        type: array
+        items:
+          type: string
+          enum:
+            - NODES
+            - NODES_USAGE
+  NodeAutomationsStatusAggregate:
+    allOf:
+      - $ref: '#/definitions/Node'
+      - type: object
+        properties:
+          automations:
+            type: object
+            properties:
+              archived:
+                type: integer
+              committed:
+                type: integer
+              draft:
+                type: integer
+              error:
+                type: integer
+              paused:
+                type: integer
+              running:
+                type: integer
+              total:
+                type: integer
+  NodeAutomationsKpiAggregate:
+    allOf:
+      - $ref: '#/definitions/Node'
+      - type: object
+        properties:
+          automations:
+            type: object
+            properties:
+              created:
+                type: integer
+
+  Page:
+    type: object
+    properties:
+      size:
+        type: integer
+      totalElements:
+        type: integer
+      totalUnfilteredElements:
+        type: integer
+      totalPages:
+        type: integer
+      number:
+        type: integer
+  PageableNodeList:
+    type: object
+    properties:
+      page:
+        $ref: '#/definitions/Page'
+      elements:
+        type: array
+        items:
+          $ref: '#/definitions/Node'
+  PageableAutomationList:
+    type: object
+    properties:
+      page:
+        $ref: '#/definitions/Page'
+      elements:
+        type: array
+        items:
+          $ref: '#/definitions/Automation'
+  PageableCustomerList:
+    type: object
+    properties:
+      page:
+        $ref: '#/definitions/Page'
+      elements:
+        type: array
+        items:
+          $ref: '#/definitions/Customer'
+  PageableCustomerExtendedList:
+    type: object
+    properties:
+      page:
+        $ref: '#/definitions/Page'
+      elements:
+        type: array
+        items:
+          $ref: '#/definitions/CustomerExtended'
+  PageablePagebuilderTemplateList:
+    type: object
+    properties:
+      page:
+        $ref: '#/definitions/Page'
+      elements:
+        type: array
+        items:
+          $ref: '#/definitions/PagebuilderTemplate'
+  PageablePagebuilderTemplatePageList:
+    type: object
+    properties:
+      page:
+        $ref: '#/definitions/Page'
+      elements:
+        type: array
+        items:
+          $ref: '#/definitions/PagebuilderTemplatePage'
+  PageableNodeAutomationsStatusAggregate:
+    type: object
+    properties:
+      page:
+        $ref: '#/definitions/Page'
+      elements:
+        type: array
+        items:
+          $ref: '#/definitions/NodeAutomationsStatusAggregate'
+  PageableNodeAutomationsKpiAggregate:
+    type: object
+    properties:
+      page:
+        $ref: '#/definitions/Page'
+      elements:
+        type: array
+        items:
+          $ref: '#/definitions/NodeAutomationsKpiAggregate'
+
+  Error:
+    type: object
+    properties:
+      message:
+        type: string
+      logref:
+        type: string
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/NestedError'
+  NestedError:
+    type: object
+    properties:
+      message:
+        type: string
+      code:
+        type: string
+      path:
+        type: string
+

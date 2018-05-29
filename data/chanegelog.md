@@ -1,9 +1,7 @@
 # Data changelog
 ---
 
-### Version 1.48.0
-
-_Published: 19 April 2018_
+### Version 1.48.0 (2018/04/19)
 
 - **New features**
     * Hello Data!
