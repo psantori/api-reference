@@ -1,2 +1,0 @@
-redoc-cli bundle ./reference.yaml -o ./reference.html -t "../../_tools/template.hbs" --title="Contacthub 1.39.0"
-
