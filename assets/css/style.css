@@ -1,5 +1,7 @@
+@import url('https://raw.githubusercontent.com/necolas/normalize.css/master/normalize.css');
+
 html {
-  font-size: 100%;
+  font-size: calc(100% + 0.25 * (100vw - 60em) / 40);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -7,9 +9,17 @@ html {
               "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
+@media (min-width: 60em) {
+  html {
+    font-size: 100%;
+  }
+}
+
+
 body {
   margin: 0;
   color: #001420;
+  background-color: #F7FCFF;
 }
 
 h1, h2, h3 {
@@ -17,43 +27,45 @@ h1, h2, h3 {
 }
 
 h1 {
-  font-size:  2.827em;
+  font-size:  2.827rem;
 }
 
 h2 {
-  font-size:  1.937em;
+  font-size:  1.937rem;
 }
 
 h3 {
-  font-size: 1.375em;
+  font-size: 1.375rem;
 }
 
-[page-header] {
-  padding: 50px 30px;
-  background-color: #FFF;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: nowrap;
-}
-
-[page-logo] {
-  display: flex;
-  align-items: center;
+a {
+  font-size: 16px;
+  color: #0391EC;
   text-decoration: none;
+}
+
+a:hover {
+  color: #5B768C;
+  text-decoration-skip-ink: auto;
+}
+
+header {
+  padding: 50px 30px;
+  background-color: #F7FCFF;
   color: #001420;
-  outline: none;
-  transform: none;
-  transform-origin: left center;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
 }
 
 
-[page-logo] > img {
-  height: 21px;
+.PageLogo {
+  height: 32px;
 }
 
 
-[page-logo] > h3 {
+.PageTitle {
   color: inherit;
   font-weight: lighter;
   margin-top: 0;
@@ -66,20 +78,56 @@ h3 {
   font-size: 25px;
   border-left: 1px solid #5a5a5a;
   font-weight: 700;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
 }
 
 
 main {
+  display: -ms-grid;
   display: grid;
   padding: 32px;
-  grid-template-rows: repeat(1fr);
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  -ms-grid-rows: ()[1fr];
+      grid-template-rows: repeat(1fr);
+  -ms-grid-columns: (minmax(350px, 1fr))[auto-fit];
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   grid-gap: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-main > section {
+.Card {
   background-color: #FFF;
-  border-radius: 8px;
-  box-shadow: 0 19px 38px 0 rgba(0, 0, 0, 0.16),
-              0 15px 12px 0 rgba(0, 0, 0, 0.12);
+  padding: 24px;
+  border-bottom: 4px solid #001420;
+  border-radius: 4px;
+  box-shadow: 0 6px 6px 0 rgba(0, 0, 0, 0.09),
+              0 10px 20px 0 rgba(0, 0, 0, 0.13);
+}
+
+
+.Card__Title {
+  margin-top: 0;
+  -moz-user-select: none;
+   -ms-user-select: none;
+       user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+ul li {
+  line-height: 1.5;
+  font-size: 1rem;
+  padding-left: 32px;
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiIgdmlld0JveD0iMCAwIDEyIDEyIj4gIDxnIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+ICAgIDxwYXRoIGZpbGw9IiM4Q0NERjYiIGQ9Ik02LDEyIEMyLjY4NjI5MTUsMTIgMCw5LjMxMzcwODUgMCw2IEMwLDIuNjg2MjkxNSAyLjY4NjI5MTUsMCA2LDAgQzkuMzEzNzA4NSwwIDEyLDIuNjg2MjkxNSAxMiw2IEMxMiw5LjMxMzcwODUgOS4zMTM3MDg1LDEyIDYsMTIgWiBNNiwxMCBDOC4yMDkxMzksMTAgMTAsOC4yMDkxMzkgMTAsNiBDMTAsMy43OTA4NjEgOC4yMDkxMzksMiA2LDIgQzMuNzkwODYxLDIgMiwzLjc5MDg2MSAyLDYgQzIsOC4yMDkxMzkgMy43OTA4NjEsMTAgNiwxMCBaIi8+ICAgIDxjaXJjbGUgY3g9IjYiIGN5PSI2IiByPSIyIiBmaWxsPSIjMDAxNDIwIi8+ICA8L2c+PC9zdmc+);
+  background-position: 8px 6px;
+  background-repeat: no-repeat;
+  background-size: 12px;
 }
